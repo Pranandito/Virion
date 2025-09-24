@@ -116,9 +116,9 @@
                 <div class="flex  items-center gap-2">
                     <img src="{{ asset('images/Logo.png') }}" alt="" class="size-14 hidden lg:block">
                     <h1 class="hidden lg:block">Virion&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;Selamat Datang,
-                        <span>User 1</span>
+                        <span>{{ Auth::user()->name }}</span>
                     </h1>
-                    <h1 class="lg:hidden">Selamat Datang, <span>User 1</span></h1>
+                    <h1 class="lg:hidden">Selamat Datang, <span>{{ Auth::user()->name }}</span></h1>
                 </div>
             </div>
             <div class="hidden lg:block">
@@ -141,17 +141,19 @@
                         class="absolute -top-0 -translate-y-1/2 z-10 rounded-full bg-[#FFFFF0] flex justify-center items-center">
                         <img src="{{ asset('images/profile_pict.png') }}" alt="" class="rounded-full p-2.5">
                     </div>
-                    <button type="button" id="btn-edit-profile"
-                        class="absolute top-2 right-0 h-fit p-2 rounded-full hover:bg-gray-200 mr-4 cursor-pointer">
-                        <img src="{{ asset('images/setting-abu.svg') }}" alt="" class="">
-                    </button>
+                    <a href="{{ route('profile.edit') }}">
+                        <button type="button" id="btn-edit-profile"
+                            class="absolute top-2 right-0 h-fit p-2 rounded-full hover:bg-gray-200 mr-4 cursor-pointer">
+                            <img src="{{ asset('images/setting-abu.svg') }}" alt="" class="">
+                        </button>
+                    </a>
                 </div>
                 <div class="p-5 mb-10 text-[#979797] text-xl">
                     <div class="md:flex justify-between">
                         <div>
-                            <h1 class="text-2xl text-gray-800">User 1</h1>
-                            <h1>User1@gmail.com</h1>
-                            <h1>+6282356538773</h1>
+                            <h1 class="text-2xl text-gray-800">{{ Auth::user()->name }}</h1>
+                            <h1>{{ Auth::user()->email }}</h1>
+                            <h1>{{ Auth::user()->nomor_hp }}</h1>
                         </div>
                         <div class="md:text-end mt-4 md:mt-0">
                             <div class="flex items-center gap-3 text-gray-800">
