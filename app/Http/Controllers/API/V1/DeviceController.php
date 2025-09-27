@@ -9,6 +9,7 @@ use App\Models\AquaSensor;
 use App\Models\Device;
 use App\Models\DevicesLog;
 use App\Models\FeedConfig;
+use App\Models\FeedStorage;
 use App\Models\HumidaConfig;
 use App\Models\HumidaSensor;
 use App\Models\SiramConfig;
@@ -144,17 +145,19 @@ class DeviceController extends Controller
 
     public function statusCheck()
     {
-        $devices = Device::select('id', 'status', 'virdi_type')->get();
+        $devices = Device::select('id', 'status', 'virdi_type', 'name')->get();
 
         $sensorModels = [
             'Siram' => SiramSensor::class,
             'Humida' => HumidaSensor::class,
             'Aqua' => AquaSensor::class,
+            'Feed' => FeedStorage::class
         ];
 
         $data = [];
         $last = [];
         $status = 0;
+        $logger = new ConfigController();
 
         foreach ($devices as $device) {
             $lastSeen = $sensorModels[$device->virdi_type]::where('device_id', $device->id)->select('device_id', 'created_at')->latest()->first();
@@ -166,17 +169,19 @@ class DeviceController extends Controller
                     $status = 1;
                     $update->status = $status;
                     $update->save();
+                    $logging = $logger->logging($device->id, 'online', $device->name);
                 } elseif ($diff > 5 && $device->status == 1) {
                     $update = Device::find($device->id);
                     $status = 0;
                     $update->status = $status;
                     $update->save();
+                    $logging = $logger->logging($device->id, 'offline', $device->name);
                 }
                 $data[$lastSeen->device_id] = strtoupper($status);
                 $last[$lastSeen->device_id] = strtoupper($diff);
             }
         }
 
-        return response()->json([$data, $last]);
+        return response()->json([$devices, $data, $last]);
     }
 }

@@ -17,7 +17,7 @@
         <!-- Nomor Wa -->
         <div class="mt-4">
             <x-input-label for="nomor_hp" :value="__('Nomor Hp')" />
-            <x-text-input id="nomor_hp" class="block mt-1 w-full" type="text" name="nomor_hp" :value="old('nomor_hp')" required autofocus autocomplete="nomor_hp" />
+            <x-text-input id="nomor_hp" class="block mt-1 w-full" type="tel" name="nomor_hp" :value="old('nomor_hp')" required autofocus autocomplete="nomor_hp" />
             <x-input-error :messages="$errors->get('nomor_hp')" class="mt-2" />
         </div>
 

@@ -49,62 +49,7 @@
 </aside>
 
 <!-- Side Bar -->
-<aside id="sidebar"
-    class="fixed transform -translate-x-full left-0 top-0 w-full lg:w-80 h-screen bg-[#FFFFF0] shadow-2xl z-30 text-xl text-[#383838] overflow-y-auto">
-    <div class="flex items-center justify-between mb-10 mt-8 mx-9">
-        <div class="flex items-center gap-4">
-            <img src="{{ asset('images/Logo.png') }}" alt="" class="size-14">
-            <h1>Virion</h1>
-        </div>
-        <button id="sidebar-close" type="button" class="cursor-pointer">
-            <i class="bi bi-layout-sidebar hover:bg-[#F4F7F3] rounded-full px-3 py-2"></i>
-        </button>
-    </div>
-    <a href="" class="">
-        <div class="flex items-center gap-4 p-2 my-2 mx-11 rounded-xl hover:bg-gray-200">
-            <img src="{{ asset('images/dashboard.svg') }}" alt="" class="">
-            <h1>Beranda</h1>
-        </div>
-    </a>
-    <hr class="my-5 text-gray-300">
-    <div class="flex items-center gap-4 px-11">
-        <img src="{{ asset('images/dashboard.svg') }}" alt="" class="">
-        <h1>Dashboard</h1>
-    </div>
-    <div class="mx-11 pl-4">
-        <a href="" class="">
-            <div class="flex items-center gap-4 p-2 m-2 rounded-xl hover:bg-gray-200">
-                <img src="{{ asset('images/siram-logo-black.svg') }}" alt="" class="">
-                <h1>Siram - 1</h1>
-            </div>
-        </a>
-        <a href="" class="">
-            <div class="flex items-center gap-4 p-2 m-2 rounded-xl hover:bg-gray-200">
-                <img src="{{ asset('images/feed-logo-black.svg') }}" alt="" class="">
-                <h1>Feed - 1</h1>
-            </div>
-        </a>
-        <a href="" class="">
-            <div class="flex items-center gap-4 p-2 m-2 rounded-xl hover:bg-gray-200">
-                <img src="{{ asset('images/aqua-logo-black.svg') }}" alt="" class="">
-                <h1>Aqua - 1</h1>
-            </div>
-        </a>
-        <a href="" class="">
-            <div class="flex items-center gap-4 p-2 m-2 rounded-xl hover:bg-gray-200">
-                <img src="{{ asset('images/humida-logo-black.svg') }}" alt="" class="">
-                <h1>Humida - 1</h1>
-            </div>
-        </a>
-    </div>
-    <hr class="my-5 text-gray-300">
-    <a href="" class="">
-        <div class="flex items-center gap-4 p-2 my-2 mx-11 rounded-xl hover:bg-gray-200">
-            <img src="{{ asset('images/logout.svg') }}" alt="" class="">
-            <h1>Logout</h1>
-        </div>
-    </a>
-</aside>
+<x-beranda.side-bar :devices="$user->devices" :iconMap="$iconMap" />
 
 <body class="bg-[#F4F7F3]">
     <div class="mx-8 lg:mx-20 pt-8 text-2xl mb-10">
@@ -122,13 +67,18 @@
                 </div>
             </div>
             <div class="hidden lg:block">
-                <a href=""
-                    class="flex items-center text-xl gap-4 px-8 py-3 rounded-full bg-[#D1D1C6] hover:bg-[#b8b8ae]">
-                    <img src="{{ asset('images/back.svg') }}" alt="" class="h-full object-cover">
-                    <h1>
-                        Kembali
-                    </h1>
-                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <a href="{{ route('logout') }}" onclick="event.preventDefault();this.closest('form').submit();"
+                        class="flex items-center text-xl gap-4 px-8 py-3 rounded-full bg-[#D1D1C6] hover:bg-[#b8b8ae]">
+                        <img src="{{ asset('images/logout.svg') }}" alt="" class="h-full object-cover">
+                        <h1>
+                            Logout
+                        </h1>
+                    </a>
+
+                </form>
+
             </div>
         </nav>
 
@@ -160,152 +110,44 @@
                                 <img src="{{ asset('images/stopwatch.svg') }}" alt="">
                                 <h1>Terakhir Online</h1>
                             </div>
-                            <h1>24 Juni 2025</h1>
-                            <h1>Surakarta</h1>
+                            {{ \Carbon\Carbon::parse($user->users_logs->last_login)->translatedFormat('d F Y') }}
+                            <h1>{{ $user->users_logs->last_location }}</h1>
                         </div>
                     </div>
                 </div>
 
                 <!-- notifikasi -->
+
+                @foreach($logs as $log)
+
                 <a href="" class="group">
                     <div class="flex justify-between items-center mx-5">
                         <div class="flex items-center gap-4">
-                            <img src="{{ asset('images/siram-logo.svg') }}" alt="" class="p-3 bg-[#62A19E] rounded-lg">
+                            <x-dynamic-component
+                                :component="'icon.' . ($iconMap[$log->device->virdi_type])"
+                                :boxed=true />
                             <div>
-                                <h1 class="text-xl group-hover:underline">Sawah - 1</h1>
-                                <p class="text-base text-gray-400 hidden lg:block">Menyiram sawah sesuai Jadwal</p>
+                                <h1 class="text-xl group-hover:underline">{{ $log->device->name }}</h1>
+                                <p class="text-base text-gray-400 hidden lg:block">{{ $log->activity }}</p>
                             </div>
                         </div>
                         <div class="text-right text-base text-gray-400 hidden lg:block">
                             <p>Baru Saja</p>
-                            <p>12:00:00</p>
+                            <p>{{ $log->created_at->format('H:i:s') }}</p>
                         </div>
                     </div>
-                    <p class="text-base text-gray-400 mt-2 mx-5 lg:hidden">Menyiram sawah sesuai Jadwal</p>
+                    <p class="text-base text-gray-400 mt-2 mx-5 lg:hidden">{{ $log->activity }}</p>
                     <div class="flex justify-between text-right text-base text-gray-400 mx-5 lg:hidden">
                         <p>Baru Saja</p>
-                        <p>12:00:00</p>
+                        <p>{{ $log->created_at->format('H:i:s') }}</p>
                     </div>
                 </a>
 
                 <hr class="my-5 text-gray-400">
 
-                <a href="" class="group">
-                    <div class="flex justify-between items-center mx-5">
-                        <div class="flex items-center gap-4">
-                            <img src="{{ asset('images/siram-logo.svg') }}" alt="" class="p-3 bg-[#80B56F] rounded-lg">
-                            <div>
-                                <h1 class="text-xl group-hover:underline">Siram - 1</h1>
-                                <p class="text-base text-gray-400 hidden lg:block">Menyiram sawah sesuai Jadwal</p>
-                            </div>
-                        </div>
-                        <div class="text-right text-base text-gray-400 hidden lg:block">
-                            <p>Baru Saja</p>
-                            <p>12:00:00</p>
-                        </div>
-                    </div>
-                    <p class="text-base text-gray-400 mt-2 mx-5 lg:hidden">Menyiram sawah sesuai Jadwal</p>
-                    <div class="flex justify-between text-right text-base text-gray-400 mx-5 lg:hidden">
-                        <p>Baru Saja</p>
-                        <p>12:00:00</p>
-                    </div>
-                </a>
-
-                <hr class="my-5 text-gray-400">
-
-                <a href="" class="group">
-                    <div class="flex justify-between items-center mx-5">
-                        <div class="flex items-center gap-4">
-                            <img src="{{ asset('images/siram-logo.svg') }}" alt="" class="p-3 bg-[#62A19E] rounded-lg">
-                            <div>
-                                <h1 class="text-xl group-hover:underline">Sawah - 1</h1>
-                                <p class="text-base text-gray-400 hidden lg:block">Menyiram sawah sesuai Jadwal</p>
-                            </div>
-                        </div>
-                        <div class="text-right text-base text-gray-400 hidden lg:block">
-                            <p>Baru Saja</p>
-                            <p>12:00:00</p>
-                        </div>
-                    </div>
-                    <p class="text-base text-gray-400 mt-2 mx-5 lg:hidden">Menyiram sawah sesuai Jadwal</p>
-                    <div class="flex justify-between text-right text-base text-gray-400 mx-5 lg:hidden">
-                        <p>Baru Saja</p>
-                        <p>12:00:00</p>
-                    </div>
-                </a>
-
-                <hr class="my-5 text-gray-400">
-
-                <a href="" class="group">
-                    <div class="flex justify-between items-center mx-5">
-                        <div class="flex items-center gap-4">
-                            <img src="{{ asset('images/siram-logo.svg') }}" alt="" class="p-3 bg-[#62A19E] rounded-lg">
-                            <div>
-                                <h1 class="text-xl group-hover:underline">Sawah - 1</h1>
-                                <p class="text-base text-gray-400 hidden lg:block">Menyiram sawah sesuai Jadwal</p>
-                            </div>
-                        </div>
-                        <div class="text-right text-base text-gray-400 hidden lg:block">
-                            <p>Baru Saja</p>
-                            <p>12:00:00</p>
-                        </div>
-                    </div>
-                    <p class="text-base text-gray-400 mt-2 mx-5 lg:hidden">Menyiram sawah sesuai Jadwal</p>
-                    <div class="flex justify-between text-right text-base text-gray-400 mx-5 lg:hidden">
-                        <p>Baru Saja</p>
-                        <p>12:00:00</p>
-                    </div>
-                </a>
-
-                <hr class="my-5 text-gray-400">
-
-                <a href="" class="group">
-                    <div class="flex justify-between items-center mx-5">
-                        <div class="flex items-center gap-4">
-                            <img src="{{ asset('images/siram-logo.svg') }}" alt="" class="p-3 bg-[#62A19E] rounded-lg">
-                            <div>
-                                <h1 class="text-xl group-hover:underline">Sawah - 1</h1>
-                                <p class="text-base text-gray-400 hidden lg:block">Menyiram sawah sesuai Jadwal</p>
-                            </div>
-                        </div>
-                        <div class="text-right text-base text-gray-400 hidden lg:block">
-                            <p>Baru Saja</p>
-                            <p>12:00:00</p>
-                        </div>
-                    </div>
-                    <p class="text-base text-gray-400 mt-2 mx-5 lg:hidden">Menyiram sawah sesuai Jadwal</p>
-                    <div class="flex justify-between text-right text-base text-gray-400 mx-5 lg:hidden">
-                        <p>Baru Saja</p>
-                        <p>12:00:00</p>
-                    </div>
-                </a>
-
-                <hr class="my-5 text-gray-400">
-
-                <a href="" class="group">
-                    <div class="flex justify-between items-center mx-5">
-                        <div class="flex items-center gap-4">
-                            <img src="{{ asset('images/siram-logo.svg') }}" alt="" class="p-3 bg-[#62A19E] rounded-lg">
-                            <div>
-                                <h1 class="text-xl group-hover:underline">Sawah - 1</h1>
-                                <p class="text-base text-gray-400 hidden lg:block">Menyiram sawah sesuai Jadwal</p>
-                            </div>
-                        </div>
-                        <div class="text-right text-base text-gray-400 hidden lg:block">
-                            <p>Baru Saja</p>
-                            <p>12:00:00</p>
-                        </div>
-                    </div>
-                    <p class="text-base text-gray-400 mt-2 mx-5 lg:hidden">Menyiram sawah sesuai Jadwal</p>
-                    <div class="flex justify-between text-right text-base text-gray-400 mx-5 lg:hidden">
-                        <p>Baru Saja</p>
-                        <p>12:00:00</p>
-                    </div>
-                </a>
-
-                <hr class="my-5 text-gray-400">
-
+                @endforeach
             </section>
+
             <section class="lg:w-7/12 mt-7 lg:mt-0">
                 <!-- Section Alat -->
                 <section class="flex-auto bg-[#FFFFF0] rounded-3xl p-11 mb-7 text-xl text-gray-400">
@@ -335,68 +177,30 @@
                                         <div class="justify-self-center">Kategori</div>
                                         <div class="justify-self-end mr-4">Status</div>
                                     </div>
-
                                     <hr class="my-4">
                                 </div>
 
-                                <a href="" class="group">
+                                @foreach($user->devices as $device)
+                                <a href="{{ route('monitoring.' . $device->virdi_type, ['serial_number' => $device->serial_number]) }}" class="group">
                                     <div class="grid grid-cols-3 items-center ml-4">
                                         <div class="justify-self-start flex items-center">
-                                            <img src="{{ asset('images/siram-logo.svg') }}" alt="" class="p-3 mr-3 bg-[#80B56F] rounded-lg">
+                                            <x-dynamic-component
+                                                :component="'icon.' . ($iconMap[$device->virdi_type])"
+                                                :boxed=true />
                                             <div>
-                                                <h1 class="text-gray-800 group-hover:underline">Siram - 1</h1>
-                                                <p class="text-lg">ID 12332</p>
+                                                <h1 class="text-gray-800 group-hover:underline">{{ $device->name }}</h1>
+                                                <p class="text-lg">ID {{ $device->serial_number }}</p>
                                             </div>
                                         </div>
-                                        <div class="justify-self-center  text-lg">Virdi - Siram</div>
+                                        <div class="justify-self-center  text-lg">Virdi - {{ $device->virdi_type }}</div>
                                         <div class="justify-self-end mr-4 text-[16px]">
-                                            <h1 class="px-3 py-[3px] rounded-full text-[#FFFFF0] bg-[#4CAF50]">
-                                                Online
-                                            </h1>
+                                            <x-icon.online-status :status="$device->status" />
                                         </div>
                                     </div>
                                 </a>
 
                                 <hr class="my-4">
-
-                                <a href="" class="group">
-                                    <div class="grid grid-cols-3 items-center ml-4">
-                                        <div class="justify-self-start flex items-center">
-                                            <img src="{{ asset('images/index-humida.svg') }}" alt=""
-                                                class="p-3 mr-3 bg-[#62A19E] rounded-lg">
-                                            <div>
-                                                <h1 class="text-gray-800 group-hover:underline">Humida - 1</h1>
-                                                <p class="text-lg">ID 12332</p>
-                                            </div>
-                                        </div>
-                                        <div class="justify-self-center text-lg">Virdi - Humida</div>
-                                        <div class="justify-self-end mr-4 text-[16px]">
-                                            <h1 class="px-3 py-[3px] rounded-full text-[#FFFFF0] bg-[#AEB4B7]">
-                                                Offline
-                                            </h1>
-                                        </div>
-                                    </div>
-                                </a>
-
-                                <hr class="my-4">
-
-                                <a href="" class="group">
-                                    <div class="grid grid-cols-3 items-center ml-4">
-                                        <div class="justify-self-start flex items-center">
-                                            <img src="{{ asset('images/feed-fish.svg') }}" alt="" class="p-3 mr-3 bg-[#D1BE4F] rounded-lg">
-                                            <div>
-                                                <h1 class="text-gray-800 group-hover:underline">Feed - 1</h1>
-                                                <p class="text-lg">ID 12332</p>
-                                            </div>
-                                        </div>
-                                        <div class="justify-self-center text-lg">Virdi - Feed</div>
-                                        <div class="justify-self-end mr-4 text-[16px]">
-                                            <h1 class="px-3 py-[3px] rounded-full text-[#FFFFF0] bg-[#4CAF50]">
-                                                Online
-                                            </h1>
-                                        </div>
-                                    </div>
-                                </a>
+                                @endforeach
                             </div>
                         </div>
                     </div>

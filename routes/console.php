@@ -8,6 +8,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use App\Http\Controllers\API\V1\ConfigController;
+use App\Models\FeedStorage;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -21,6 +22,7 @@ Schedule::call(function () {
         'Siram' => SiramSensor::class,
         'Humida' => HumidaSensor::class,
         'Aqua' => AquaSensor::class,
+        'Feed' => FeedStorage::class
     ];
 
     $data = [];
@@ -52,4 +54,4 @@ Schedule::call(function () {
     }
 
     return response()->json([$data, $last]);
-})->everyFiveMinutes();
+})->everyMinute();

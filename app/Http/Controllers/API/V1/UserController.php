@@ -18,14 +18,17 @@ class UserController extends Controller
 {
     public function userProfile($email)
     {
-        $user = User::select('id', 'username', 'email', 'profile_pict', 'nomor_hp', 'job')
-            ->with(['users_logs:last_location,last_login,user_id'])
+        $user = User::select('id')
+            ->with(['users_logs:last_location,last_login,user_id', 'devices:id,name,serial_number,virdi_type,status,owner_id'])
             ->where('email', $email)->first();
 
-        $devices = Device::select('id', 'name', 'serial_number', 'virdi_type', 'status')->where('owner_id', $user->id)->get();
 
-        $devices_id = $devices->pluck('id');
-        $logs = DevicesLog::whereIn('device_id', $devices_id)->latest()->limit(6)->get();
+        $devices_id = $user->devices->pluck('id');
+        $logs = DevicesLog::with('device:id,name')
+            ->whereIn('device_id', $devices_id)
+            ->latest()
+            ->limit(6)
+            ->get();
 
         $sensorModels = [
             'Siram' => SiramSensor::class,
@@ -35,13 +38,13 @@ class UserController extends Controller
 
         $dataStream = [];
 
-        $dataSizeRow = [    // ukuran data pada tabel sensor per baris
+        $dataSizeRow = [    // ukuran data pada tabel sensor per baris (byte)
             'Siram' => 2,
             'Humida' => 2,
             'Aqua' => 1,
         ];
 
-        foreach ($devices as $device) {
+        foreach ($user->devices as $device) {
             $dates = $sensorModels[$device->virdi_type]::where('device_id', $device->id)
                 ->selectRaw('DATE(created_at) as dates')
                 ->distinct()->limit(30)->get();
@@ -57,7 +60,6 @@ class UserController extends Controller
 
         return response()->json([
             'user_data' => $user,
-            'device' => $devices,
             'device_logs' => $logs,
             'data_stream' => $dataStream,
         ]);

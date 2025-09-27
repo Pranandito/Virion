@@ -26,7 +26,7 @@ class DashboardController
 
         // $config = $configModels[$virdiType]::where('device_id', $device_id)->first();
 
-        $config = Device::select('name', 'status', 'id')->with([$configTable[$virdiType]])->where('id', $device_id)->first();
+        $config = Device::select('name', 'status', 'id')->with([$configTable[$virdiType], 'devices_logs'])->where('id', $device_id)->first();
 
         return response()->json([
             'device' => $config
@@ -91,26 +91,29 @@ class DashboardController
             'Aqua' => ['temperature', 'turbidity', 'pH', 'oxygen'],
         ];
 
-        $baseQuerryWeekly = $sensorModels[$virdiType]::whereBetween('created_at', [now()->subWeek(), now()]);
-        $baseQuerryDaily = $sensorModels[$virdiType]::where('created_at', Carbon::today());
+        $latest = $sensorModels[$virdiType]::where('device_id', $device_id)->latest()->first();
+
+        $baseQuerryDaily = $sensorModels[$virdiType]::whereDate('created_at', $latest->created_at->toDateString())->where('device_id', $device_id);
+        $baseQuerryWeekly = $sensorModels[$virdiType]::whereBetween('created_at', [$latest->created_at->subWeek(), $latest->created_at])->where('device_id', $device_id);
 
         foreach ($colomnList[$virdiType] as $kolom) {
             $weekly = $baseQuerryWeekly->addSelect(
                 DB::raw(
                     "AVG($kolom) as avg_weekly_$kolom"
                 )
-            );
+            )->first();
 
             $daily = $baseQuerryDaily->addSelect(
                 DB::raw(
                     "AVG($kolom) as avg_daily_$kolom"
                 )
-            );
+            )->first();
         }
 
         return response()->json([
-            'avg_daily' => $daily->first(),
-            'avg_weekly' => $weekly->first()
+            'avg_daily' => $daily,
+            'avg_weekly' => $weekly,
+            'latest' => $latest,
         ]);
     }
 }
