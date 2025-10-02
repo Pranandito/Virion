@@ -5,11 +5,16 @@ namespace App\Http\Controllers\API\V1;
 use App\Http\Controllers\Controller;
 use App\Models\AquaSensor;
 use App\Models\Device;
+use App\Models\FeedConfig;
+use App\Models\FeedSchedule;
+use App\Models\FeedStorage;
 use App\Models\HumidaSensor;
 use App\Models\SiramSensor;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use phpDocumentor\Reflection\PseudoTypes\LowercaseString;
 
 class DashboardController
 {
@@ -33,17 +38,24 @@ class DashboardController
         ]);
     }
 
-    public function dashboardData($virdiType, $device_id, $periode = "now")
+    public function chartData($virdiType, $device_id, $periode = "now")
     {
         $sensorModels = [
             'Siram' => SiramSensor::class,
             'Humida' => HumidaSensor::class,
             'Aqua' => AquaSensor::class,
+            'Feed' => FeedStorage::class
         ];
 
         switch ($periode) {
             case "now":
-                $sensorData = $sensorModels[$virdiType]::where('device_id', $device_id)->latest()->first();
+                $sensorData = Device::select('id', 'status')->where('id', $device_id)
+                    ->with([
+                        strtolower($virdiType) . '_sensors' => function ($query) {
+                            $query->latest()->first();
+                        }
+                    ])->latest()->first();
+                // $sensorData = $sensorModels[$virdiType]::where('device_id', $device_id)->latest()->first();
                 break;
 
             case "daily":
@@ -58,10 +70,9 @@ class DashboardController
                 $sensorData = $sensorModels[$virdiType]::where('device_id', $device_id)->whereBetween('created_at', [now()->subMonth(), now()])->get();
                 break;
         }
-        return response()->json([
-            'data' => $sensorData,
-            'periode' => $periode,
-        ]);
+        return response()->json(
+            $sensorData,
+        );
     }
 
     public function dataStream($virdiType, $device_id)
@@ -115,5 +126,166 @@ class DashboardController
             'avg_weekly' => $weekly,
             'latest' => $latest,
         ]);
+    }
+
+    public function add_schedule(Request $request, $device_id)
+    {
+        $validated = $request->validate([
+            'days' => 'required|array',
+            'days.*' => 'in:senin,selasa,rabu,kamis,jumat,sabtu,minggu',
+            'time' => 'required|date_format:H:i',
+            'portion' => 'required|decimal:2'
+        ]);
+
+        $validated['device_id'] = $device_id;
+        $validated['days'] = implode(",", $validated['days']);
+        $insert = FeedSchedule::insert($validated);
+
+        return response()->json([
+            'status_penyimpanan' => $insert,
+            'data' => $validated,
+            'today' => today()
+        ]);
+    }
+
+    public function fetch_schedule($device_id)
+    {
+        $schedules = FeedSchedule::select('id', 'device_id', 'active_status', 'time', 'days', 'portion')
+            ->where('device_id', $device_id)->get();
+
+        foreach ($schedules as $schedule) {
+            if (substr_count($schedule->days, ",") == 6) {
+                $dayCrop = "Setiap hari";
+            } else {
+                $dayList = explode(",", $schedule->days);
+                $dayCrop = [];
+                foreach ($dayList as $day) {
+                    $day = substr($day, 0, 3);
+                    array_push($dayCrop, $day);
+                }
+            }
+            $schedule->dayCrop = $dayCrop;
+        }
+
+        return response()->json([$schedules]);
+    }
+
+    public function delete_schedule($id)
+    {
+        $delete_status = FeedSchedule::destroy($id);
+
+        return response()->json(['delete_status' => $delete_status]);
+    }
+
+
+    public function tes($device_id)
+    {
+        // $schedules = FeedSchedule::select('device_id', 'days', 'active_status')->where('active_status', 1)->get();
+
+        // FeedConfig::query()->update(['total_daily' => 0, 'total_daily' => 0]);
+
+
+        // update setiap nambah / hapus jadwal
+        $days = ["minggu", "senin", "selasa", "rabu", "kamis", "jumat", "sabtu"];
+        $todayIndex = Carbon::today()->dayOfWeek; // 0 = Minggu, 6 = Sabtu
+        $remainingDays = array_slice($days, $todayIndex);
+
+        $schedules = FeedSchedule::select('days', 'active_status', 'device_id')->where('active_status', 1)->where('device_id', $device_id)->get();
+
+        $weekly_feed_remaining = 0;
+        foreach ($schedules as $schedule) {
+            foreach ($days as $day) {
+                if (str_contains($schedule->days, $day)) {
+                    $weekly_feed_remaining++;
+                }
+            }
+        }
+
+
+        // return response()->json([$schedules, strtolower(Carbon::now()->isoFormat('dddd'))]);
+        return response()->json([
+            'remainingD' => $remainingDays,
+            'jadwal' => $schedule,
+            'total_mingguan' => $weekly_feed_remaining
+        ]);
+    }
+
+
+    public function supdate_weekly()
+    {
+        $data = FeedSchedule::select('days', 'active_status', 'device_id', 'time')->where('active_status', 1)->get()->groupBy('device_id');
+
+        foreach ($data as $device_id => $schedules) {
+            foreach ($schedules as $schedule) {
+                $schedule_total = str_word_count($schedule->days) + 1;
+            }
+
+            // $update = FeedSchedule::where('device_id', $device_id)->update(['weekly_total' => $schedule_total]);
+        }
+
+        return response()->json($data);
+    }
+
+    public function update_daily($device_id)
+    {
+        $schedules = FeedSchedule::select('days', 'active_status', 'device_id', 'id')->where('active_status', 1)->where('device_id', $device_id)->get();
+
+        $total_daily = 0;
+        foreach ($schedules as $schedule) {
+            if (stripos($schedule->days, now()->dayName) !== false) {
+                $total_daily++;
+            }
+        }
+
+        $update = FeedConfig::where('device_id', $device_id)->update(["total_daily" => $total_daily]);
+
+        return response()->json([$total_daily, now()->dayName, $update]);
+    }
+
+    public function update_weekly($device_id)
+    {
+        $schedules = FeedSchedule::select('days', 'active_status', 'device_id', 'id')->where('active_status', 1)->where('device_id', $device_id)->get();
+
+        $total_weekly = 0;
+        foreach ($schedules as $schedule) {
+            $total_weekly += (substr_count($schedule->days, ",") + 1);
+        }
+
+        $update = FeedConfig::where('device_id', $device_id)->update(["total_weekly" => $total_weekly]);
+
+        return response()->json([$total_weekly, $update, $schedule->days]);
+    }
+
+    public function feed($device_id)
+    {
+        $data = Device::with([
+            'feed_config:id,device_id,feed_size,last_refill,mode,total_daily,total_weekly,success_daily,success_weekly,manual_daily,manual_weekly',
+            'feed_schedules' => function ($query) {
+                $query->orderBy('active_status', 'desc');
+            },
+            'devices_logs' => function ($query) {
+                $query->latest()->limit(6);
+            },
+            'feed_storages' => function ($query) {
+                $query->latest()->limit(1);
+            }
+        ])->where('id', $device_id)->first();
+
+
+        foreach ($data->feed_schedules as $schedule) {
+            if (substr_count($schedule->days, ",") == 6) {
+                $dayCrop = ["Setiap hari"];
+            } else {
+                $dayList = explode(",", $schedule->days);
+                $dayCrop = [];
+                foreach ($dayList as $day) {
+                    $day = substr($day, 0, 3);
+                    array_push($dayCrop, $day);
+                }
+            }
+            $schedule->dayCrop = $dayCrop;
+        }
+
+        return response()->json($data->feed_storages[0]->created_at);
     }
 }

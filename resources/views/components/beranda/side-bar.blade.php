@@ -10,7 +10,7 @@
 
 <!-- Side Bar -->
 <aside id="sidebar"
-    class="fixed transform -translate-x-full left-0 top-0 w-full lg:w-80 h-screen bg-[#FFFFF0] shadow-2xl z-30 text-xl text-[#383838] overflow-y-auto">
+    class="fixed transform -translate-x-full left-0 top-0 w-full lg:w-86 h-screen bg-[#FFFFF0] shadow-2xl z-30 text-xl text-[#383838] overflow-y-auto">
     <div class="flex items-center justify-between mb-10 mt-8 mx-9">
         <div class="flex items-center gap-4">
             <img src="{{ asset('images/Logo.png') }}" alt="" class="size-14">

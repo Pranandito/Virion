@@ -16,7 +16,13 @@ class BerandaController extends Controller
     public function create()
     {
         $user = User::select('id')
-            ->with(['users_logs:last_location,last_login,user_id', 'devices:id,name,serial_number,virdi_type,status,owner_id'])
+            ->with([
+                'users_logs:last_location,last_login,user_id',
+                'devices' => function ($query) {
+                    $query->select('id', 'name', 'serial_number', 'virdi_type', 'status', 'owner_id')->orderBy('status', 'desc');
+                }
+                // 'devices:id,name,serial_number,virdi_type,status,owner_id'
+            ])
             ->where('email',  Auth::user()->email)->first();
 
 

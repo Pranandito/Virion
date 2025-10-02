@@ -56,12 +56,17 @@ class Device extends Model
         return $this->hasOne(FeedConfig::class);
     }
 
-    public function feed_schedule()
+    public function feed_schedules()
     {
         return $this->hasMany(FeedSchedule::class);
     }
 
-    public function feed_storage()
+    public function feed_storages()
+    {
+        return $this->hasMany(FeedStorage::class);
+    }
+
+    public function feed_sensors()
     {
         return $this->hasMany(FeedStorage::class);
     }

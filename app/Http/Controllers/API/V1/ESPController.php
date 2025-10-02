@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API\V1;
 use App\Models\AquaSensor;
 use App\Models\Device;
 use App\Models\FeedConfig;
+use App\Models\FeedSchedule;
 use App\Models\FeedStorage;
 use App\Models\HumidaConfig;
 use App\Models\HumidaSensor;
@@ -12,6 +13,7 @@ use App\Models\SiramConfig;
 use App\Models\SiramSensor;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ESPController
 {
@@ -24,14 +26,21 @@ class ESPController
     public function store(Request $request, $virdiType, $device_id)
     {
         $validated = $request->validate([
+            // Humida & Siram
             'temperature' => 'sometimes|required|decimal:2',  // kalau 44.40 kirim string "44.40"
             'humidity' => 'sometimes|required|decimal:2',
+
+            // Aqua
             'turbidity' => 'sometimes|required|decimal:2',
             'pH' => 'sometimes|required|decimal:2',
             'oxygen' => 'sometimes|required|decimal:2',
             'batt_voltage' => 'sometimes|required|decimal:3',
+
+            // Feed
             'storage' => 'sometimes|required|decimal:1',
             'refill' => 'sometimes|required|boolean',
+
+            'created_at' => 'sometimes|required|timestamp',
         ]);
 
         $sensorModels = [
@@ -97,7 +106,7 @@ class ESPController
         ];
 
         if ($virdiType == "Feed") {
-            $config = $configModels[$virdiType]::select('pelet_size', 'mode')
+            $config = $configModels[$virdiType]::select('feed_size', 'mode')
                 ->where('device_id', $device_id)->first();
         } else {
             $config = $configModels[$virdiType]::select('upper_threshold', 'lower_threshold', 'mode')
@@ -109,16 +118,39 @@ class ESPController
         ]);
     }
 
-    public function tes()
+    public function getSchedule($device_id)
     {
-        $data = Device::find(18)->first();
+        $schedules = FeedSchedule::select('id', 'device_id', 'active_status', 'time', 'days', 'portion')
+            ->where('device_id', $device_id)->get();
 
-        $selisih = $data->created_at->diffInMinutes(Carbon::now());
-
-        if ($selisih > 5) {
-            $selisih = 2;
+        foreach ($schedules as $schedule) {
+            $schedule->days = explode(",", $schedule->days);
         }
 
-        return response()->json($data->created_at == Carbon::today());
+        return response()->json($schedules);
+    }
+
+    public function feedSuccess($mode, $device_id)
+    {
+        if ($mode == "Auto") {
+            $update_success = FeedConfig::where('device_id', $device_id)
+                ->update([
+                    'success_daily' => DB::raw('success_daily + 1'),
+                    'success_weekly' => DB::raw('success_weekly + 1')
+                ]);
+        } else {
+            $update_success = FeedConfig::where('device_id', $device_id)
+                ->update([
+                    'manual_daily' => DB::raw('manual_daily + 1'),
+                    'manual_weekly' => DB::raw('manual_weekly + 1'),
+                ]);
+        }
+
+        $logger = new ConfigController();
+        $device = Device::where('id', $device_id)->select('id', 'name')->first();
+
+        $logging = $logger->logging($device_id, 'feed_success_' . $mode, $device->name);
+
+        return response()->json(['status_update' => $update_success]);
     }
 }

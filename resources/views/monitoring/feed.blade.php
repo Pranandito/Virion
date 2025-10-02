@@ -7,8 +7,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <title>{{ $device->name }}</title>
-    <link rel="shortcut icon" href="/Logo.png" type="image/x-icon">
+    <title>{{ $data->name }}</title>
+    <link rel="shortcut icon" href="{{ asset('images/Logo.png') }}" type="image/x-icon">
 </head>
 
 <x-beranda.side-bar :devices="$devices" />
@@ -18,108 +18,73 @@
     <aside id="overlay" class="fixed top-0 right-0 left-0 bottom-0 z-10 bg-gray-600 opacity-40 hidden cursor-pointer">
     </aside>
 
-    <!-- form update treshold kelembapan -->
-    <aside id="threshold-form" class="hidden">
+    <!-- form resize pelet -->
+    <aside id="pelet-form" class="hidden">
         <div
             class="fixed w-90 lg:w-150 bg-[#FFFFF0] top-1/2 right-1/2 -translate-y-1/2 translate-x-1/2 z-20 rounded-2xl p-11">
             <div class="flex items-center justify-between mb-1">
                 <div class="flex items-center text-gray-800 gap-2 text-xl mb-2">
                     <img src="setting.svg" alt="">
-                    <h1 class="text-lg lg:text-xl">Pengaturan treshold kelembapan</h1>
+                    <h1 class="text-lg lg:text-xl">Pengaturan ukuran pelet</h1>
                 </div>
                 <button id="form-exit" type="button" class="px-2 py-1 rounded-full hover:bg-[#D1D1C6] cursor-pointer">
                     <i class="bi bi-x-lg"></i>
                 </button>
             </div>
-            <p>Atur batas atas dan batas bawah kelembapan greenhouse anda</p>
+            <p>Atur ukuran pelet agar pemberian pakan dapat sesuai dengan takaran yang ditentukan</p>
             <div class="mt-4 lg:flex items-center justify-between">
-                <div>
-                    <div class="bg-white border border-gray-200 rounded-lg" data-hs-input-number="">
-                        <div class="w-full flex justify-between items-center gap-x-1">
-                            <form method="POST" action="" class="grow py-2 px-3 flex">
-                                <input class="w-full p-0 bg-transparent border-0 text-gray-800 focus:ring-0"
-                                    type="number" aria-roledescription="Number field" min="0" readonly value="40"
-                                    data-hs-input-number-input="" id="up-threshold">
-                                <span class="text-gray-300">%</span>
-                            </form>
-                            <div class="flex items-center -gap-y-px divide-x divide-gray-200 border-s border-gray-200">
-                                <button type="button"
-                                    class="size-10 inline-flex justify-center items-center gap-x-2 text-sm font-medium last:rounded-e-lg bg-white text-gray-800 hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
-                                    id="up-thres-decrease">
-                                    <svg class="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24"
-                                        height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M5 12h14"></path>
-                                    </svg>
-                                </button>
-                                <button type="button"
-                                    class="size-10 inline-flex justify-center items-center gap-x-2 text-sm font-medium last:rounded-e-lg bg-white text-gray-800 hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
-                                    id="up-thres-increase">
-                                    <svg class="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24"
-                                        height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M5 12h14"></path>
-                                        <path d="M12 5v14"></path>
-                                    </svg>
-                                </button>
-                            </div>
+                <div class="bg-white border border-gray-200 rounded-lg" data-hs-input-number="">
+                    <div class="w-full flex justify-between items-center gap-x-1">
+                        <div class="grow py-2 px-3 flex">
+                            <input class="w-full p-0 bg-transparent border-0 text-gray-800 focus:ring-0" type="number"
+                                aria-roledescription="Number field" min="0" readonly value="1.0"
+                                data-hs-input-number-input="" id="input">
+                            <span class="text-gray-300">mm</span>
                         </div>
-                    </div>
-
-                    <div class="bg-white border border-gray-200 rounded-lg mt-4" data-hs-input-number="">
-                        <div class="w-full flex justify-between items-center gap-x-1">
-                            <form method="POST" action="" class="grow py-2 px-3 flex">
-                                <input class="w-full p-0 bg-transparent border-0 text-gray-800 focus:ring-0"
-                                    type="number" aria-roledescription="Number field" min="0" readonly value="50"
-                                    data-hs-input-number-input="" id="low-threshold">
-                                <span class="text-gray-300">%</span>
-                            </form>
-                            <div class="flex items-center -gap-y-px divide-x divide-gray-200 border-s border-gray-200">
-                                <button type="button"
-                                    class="size-10 inline-flex justify-center items-center gap-x-2 text-sm font-medium last:rounded-e-lg bg-white text-gray-800 hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
-                                    id="low-thres-decrease">
-                                    <svg class="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24"
-                                        height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M5 12h14"></path>
-                                    </svg>
-                                </button>
-                                <button type="button"
-                                    class="size-10 inline-flex justify-center items-center gap-x-2 text-sm font-medium last:rounded-e-lg bg-white text-gray-800 hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
-                                    id="low-thres-increase">
-                                    <svg class="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24"
-                                        height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M5 12h14"></path>
-                                        <path d="M12 5v14"></path>
-                                    </svg>
-                                </button>
-                            </div>
+                        <div class="flex items-center -gap-y-px divide-x divide-gray-200 border-s border-gray-200">
+                            <button type="button"
+                                class="size-10 inline-flex justify-center items-center gap-x-2 text-sm font-medium last:rounded-e-lg bg-white text-gray-800 hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
+                                id="decrease">
+                                <svg class="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M5 12h14"></path>
+                                </svg>
+                            </button>
+                            <button type="button"
+                                class="size-10 inline-flex justify-center items-center gap-x-2 text-sm font-medium last:rounded-e-lg bg-white text-gray-800 hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
+                                id="increase">
+                                <svg class="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M5 12h14"></path>
+                                    <path d="M12 5v14"></path>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
-                <button type="submit" id="submit-form-humidity" class="w-full lg:w-40 mt-6 lg:mt-0">
+                <button type="submit" id="submit-form-pelet" class="w-full lg:w-40 mt-6 lg:mt-0">
                     <h1
-                        class="cursor-pointer border rounded-xl border-[#62A19E] text-base px-5 py-1 hover:text-[#FFFFF0] hover:bg-[#62A19E] flex justify-center">
+                        class="cursor-pointer border rounded-xl border-[#D1BE4F] text-base px-5 py-1 hover:text-[#FFFFF0] hover:bg-[#D1BE4F] flex justify-center">
                         Simpan</h1>
                 </button>
             </div>
         </div>
     </aside>
 
-    <!-- navbar -->
     <div class="mx-8 lg:mx-20 pt-8 text-2xl mb-10">
         <nav class="flex justify-between items-center mb-11">
-            <div class="flex  items-center lg:gap-11 gap-5">
+            <div class="flex  items-center gap-5 lg:gap-11">
                 <button type="button" id="hamburger" class="cursor-pointer hover:bg-[#D1D1C6] rounded-full px-2 py-1">
                     <i class="bi bi-list text-3xl"></i>
                 </button>
                 <div class="flex  items-center gap-4">
                     <img src="{{ asset('images/Logo.png') }}" alt="" class="size-14 hidden lg:block">
                     <h1 class="hidden lg:block">Virion&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;Dashboard
-                        <span>{{ $device->name }}</span>
+                        <span>{{ $data->name }}</span>
                     </h1>
-                    <h1 class="lg:hidden">Dashboard <span>{{ $device->name }}</span></h1>
+                    <h1 class="lg:hidden">Dashboard <span>{{ $data->name }}</span></h1>
                 </div>
             </div>
             <div class="hidden lg:block">
@@ -141,35 +106,62 @@
                     <div class="row-span-2 bg-[#FFFFF0] rounded-[20px] p-10">
                         <div class="block lg:flex items-center justify-between mb-6 text-gray-800">
                             <div class="flex items-center gap-4 text-xl">
-                                <div class=" bg-[#62A19E] rounded-full">
-                                    <svg width="54" height="54" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg" class="p-3">
-                                        <path d="M13.9168 23.8333C12.9446 23.8333 12.1182 23.4931 11.4377 22.8125C10.7571 22.1319 10.4168 21.3056 10.4168 20.3333H12.7502C12.7502 20.6639 12.8622 20.9412 13.0862 21.1652C13.3102 21.3892 13.5871 21.5008 13.9168 21.5C14.2466 21.4992 14.5239 21.3872 14.7487 21.164C14.9734 20.9408 15.0851 20.6639 15.0835 20.3333C15.0819 20.0028 14.9699 19.7259 14.7475 19.5027C14.5251 19.2794 14.2482 19.1674 13.9168 19.1667H2.8335V16.8333H13.9168C14.8891 16.8333 15.7154 17.1736 16.396 17.8542C17.0766 18.5347 17.4168 19.3611 17.4168 20.3333C17.4168 21.3056 17.0766 22.1319 16.396 22.8125C15.7154 23.4931 14.8891 23.8333 13.9168 23.8333ZM2.8335 12.1667V9.83333H18.5835C19.0891 9.83333 19.5071 9.66806 19.8377 9.3375C20.1682 9.00695 20.3335 8.58889 20.3335 8.08333C20.3335 7.57778 20.1682 7.15972 19.8377 6.82917C19.5071 6.49861 19.0891 6.33333 18.5835 6.33333C18.0779 6.33333 17.6599 6.49861 17.3293 6.82917C16.9988 7.15972 16.8335 7.57778 16.8335 8.08333H14.5002C14.5002 6.93611 14.8941 5.96856 15.682 5.18067C16.4699 4.39278 17.4371 3.99922 18.5835 4C19.7299 4.00078 20.6975 4.39472 21.4862 5.18183C22.2748 5.96895 22.6684 6.93611 22.6668 8.08333C22.6653 9.23056 22.2717 10.1981 21.4862 10.986C20.7006 11.7739 19.7331 12.1674 18.5835 12.1667H2.8335ZM22.0835 21.5V19.1667C22.5891 19.1667 23.0071 19.0014 23.3377 18.6708C23.6682 18.3403 23.8335 17.9222 23.8335 17.4167C23.8335 16.9111 23.6682 16.4931 23.3377 16.1625C23.0071 15.8319 22.5891 15.6667 22.0835 15.6667H2.8335V13.3333H22.0835C23.2307 13.3333 24.1983 13.7273 24.9862 14.5152C25.7741 15.3031 26.1676 16.2702 26.1668 17.4167C26.1661 18.5631 25.7725 19.5307 24.9862 20.3193C24.1998 21.108 23.2323 21.5016 22.0835 21.5Z" fill="white" />
+                                <div class=" bg-[#D1BE4F] rounded-full">
+                                    <svg width="53" height="53" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" class="p-3">
+                                        <path d="M7.50903 15H7.49854" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M13.75 20.0522C14.3294 20.2434 14.8845 20.4635 15.3874 20.8156M15.3874 20.8156C16.6884 21.7264 17.5 23.2205 17.5 24.8556C17.5 24.9355 17.4331 25.0004 17.3524 25C13.706 24.9839 12.073 24.3665 11.3867 23.3477L10 21.071C6.8856 20.4421 4.02285 18.4531 2.5 15.1041C6.25 6.85736 18.125 6.85736 21.875 15.1041M15.3874 20.8156C18.1001 19.9902 20.5189 18.0865 21.875 15.1041M21.875 15.1041C22.2916 14.2795 24.5 11.3931 27.5 11.3931C26.4584 12.4239 24.75 16.3411 26.25 18.8152C24.75 18.8152 22.5 15.9289 21.875 15.1041ZM15.3874 9.39275C16.6884 8.48205 17.5 6.9878 17.5 5.35272C17.5 4.3195 12.1146 5.78007 11.3867 6.86057L10 9.13727" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
 
                                 </div>
-                                <h1>Indeks Kualitas <br> Udara Greenhouse</h1>
+                                <h1>Status Pemberian <br>Pakan Terakhir</h1>
                             </div>
-                            <h1 class="text-4xl mt-4 lg:mt-0 w-fit mx-auto lg:mx-0">{{ $index['current'] ?? '-'}}</h1>
+                            <h1 class="text-4xl mt-4 lg:mt-0 w-fit mx-auto lg:mx-0">Berhasil</h1>
                         </div>
-                        <p>{{ $index['insight'] ?? '-'}}</p>
                         <hr class="my-4">
                         <div class="flex justify-between">
                             <h1>Rata-rata hari ini</h1>
-                            <h1>{{ $index['daily'] ?? '-'}}</h1>
+                            <h1>{{ $data->feed_config->success_daily + $data->feed_config->manual_daily }} / {{ $data->feed_config->total_daily + $data->feed_config->manual_daily }}</h1>
                         </div>
                         <div class="flex justify-between">
-                            <h1>Rata-rata minggu ini</h1>
-                            <h1>{{ $index['weekly'] ?? '-'}}</h1>
+                            <h1>Pemberian berhasil minnggu ini</h1>
+                            <h1>{{ $data->feed_config->success_weekly + $data->feed_config->manual_weekly }} / {{ $data->feed_config->total_weekly + $data->feed_config->manual_weekly }}</h1>
                         </div>
+                        <hr class="my-4">
+
+                        <div class="block lg:flex  items-center justify-between mb-4 text-gray-800 text-lg">
+                            <div class="flex items-center gap-4">
+                                <svg width="35" height="35" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <g clip-path="url(#clip0_456_344)">
+                                        <path d="M14.5 25C13.6833 25 12.9931 24.718 12.4292 24.1541C11.8653 23.5902 11.5833 22.9 11.5833 22.0833C11.5833 21.2666 11.8653 20.5764 12.4292 20.0125C12.9931 19.4486 13.6833 19.1666 14.5 19.1666C15.3167 19.1666 16.0069 19.4486 16.5708 20.0125C17.1347 20.5764 17.4167 21.2666 17.4167 22.0833C17.4167 22.9 17.1347 23.5902 16.5708 24.1541C16.0069 24.718 15.3167 25 14.5 25ZM7.90833 18.4083L5.45833 15.9C6.60556 14.7527 7.95228 13.8439 9.4985 13.1735C11.0447 12.503 12.7119 12.1674 14.5 12.1666C16.2881 12.1658 17.9557 12.5061 19.5027 13.1875C21.0497 13.8688 22.396 14.7924 23.5417 15.9583L21.0917 18.4083C20.2361 17.5527 19.2444 16.8819 18.1167 16.3958C16.9889 15.9097 15.7833 15.6666 14.5 15.6666C13.2167 15.6666 12.0111 15.9097 10.8833 16.3958C9.75556 16.8819 8.76389 17.5527 7.90833 18.4083ZM2.95 13.45L0.5 11C2.28889 9.17218 4.37917 7.74302 6.77083 6.71246C9.1625 5.6819 11.7389 5.16663 14.5 5.16663C17.2611 5.16663 19.8375 5.6819 22.2292 6.71246C24.6208 7.74302 26.7111 9.17218 28.5 11L26.05 13.45C24.5528 11.9527 22.8176 10.7814 20.8443 9.93596C18.8711 9.09052 16.7563 8.6674 14.5 8.66663C12.2437 8.66585 10.1293 9.08896 8.15683 9.93596C6.18439 10.783 4.44878 11.9543 2.95 13.45Z" fill="black" />
+                                    </g>
+                                    <defs>
+                                        <clipPath id="clip0_456_344">
+                                            <rect width="28" height="28" fill="black" transform="translate(0.5 0.5)" />
+                                        </clipPath>
+                                    </defs>
+                                </svg>
+                                <h1>Konektivitas <br> Perangkat IoT</h1>
+                            </div>
+                            <h1 class="text-2xl mt-4 lg:mt-0 w-fit mx-auto lg:mx-0">Online</h1>
+                        </div>
+                        <div class="flex justify-between">
+                            <h1>Durasi terhubung hari ini</h1>
+                            <h1>{{ $data->feed_storages[0]->online_duration ?? 0}}</h1>
+                        </div>
+                        <div class="flex justify-between">
+                            <h1>Update data terakhir</h1>
+                            <h1>{{ $data->feed_storages->first()?->created_at?->format('H:i:s d-m-Y') ?? '-' }}</h1>
+                        </div>
+
                         <hr class="my-4">
                         <div class="flex items-center justify-between mb-4">
                             <div>
-                                <h1 class="text-gray-800 text-base">Mode Humidifier</h1>
-                                <p class="hidden lg:block">Atur mode humidifier anda</p>
+                                <h1 class="text-gray-800 text-base">Mode Feeder</h1>
+                                <p class="hidden lg:block">Atur mode feeder anda</p>
                             </div>
                             <div class="relative inline-block">
                                 <button id="dropdownRadioHelperButton" data-dropdown-toggle="dropdownRadioHelper"
-                                    class="cursor-pointer text-gray-800 bg-[#FFFFF0] rounded-xl px-5 py-1.5 text-center inline-flex items-center border-[#62A19E] border hover:bg-[#62A19E] hover:text-[#FFFFF0]"
+                                    class="cursor-pointer text-gray-800 bg-[#FFFFF0] rounded-xl px-5 py-1.5 text-center inline-flex items-center border-[#D1BE4F] border hover:bg-[#D1BE4F] hover:text-[#FFFFF0]"
                                     type="button">Mode<svg class="w-2.5 h-2.5 ms-3" aria-hidden="true"
                                         xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
@@ -193,7 +185,7 @@
                                                         <div>Automatic</div>
                                                         <p id="helper-radio-text-4"
                                                             class="text-xs font-normal text-gray-500">
-                                                            Menyalakan humidifier secara otomatis ketika dibutuhkan
+                                                            Memberi pakan sesuai jadwal secara otomatis
                                                         </p>
                                                     </label>
                                                 </div>
@@ -210,7 +202,7 @@
                                                         <div>Manual - On</div>
                                                         <p id="helper-radio-text-5"
                                                             class="text-xs font-normal text-gray-500">
-                                                            Menyalakan humidifier sekarang
+                                                            Memberi pakan sekarang
                                                         </p>
                                                     </label>
                                                 </div>
@@ -220,59 +212,69 @@
                                 </div>
                             </div>
                         </div>
-                        <h1 class="text-lg">Tips</h1>
-                        <ul class="list-disc list-inside pl-2">
-                            <li>
-                                Suhu ideal: 25–28°C | Kelembapan ideal: 50–70%
-                            </li>
-                            <li>
-                                Aktifkan mode otomatis untuk menjaga kelembapan dalam batas ideal secara real-time
-                            </li>
-                        </ul>
                     </div>
                     <div class="bg-[#FFFFF0] rounded-[20px] p-10">
                         <div class="block lg:flex items-center justify-between mb-6 text-gray-800">
                             <div class="flex items-center gap-4 text-xl">
-                                <div class="p-3 bg-[#62A19E] rounded-full">
-                                    <svg width="29" height="29" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M4.5835 16.4577C4.5835 11.5764 8.76016 6.7522 11.6932 3.96737C12.4464 3.23971 13.4528 2.83301 14.5002 2.83301C15.5475 2.83301 16.5539 3.23971 17.3072 3.96737C20.239 6.75337 24.4168 11.5764 24.4168 16.4577C24.4168 21.2434 20.6613 26.1667 14.5002 26.1667C8.339 26.1667 4.5835 21.2434 4.5835 16.4577Z" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                                        <path d="M5.16699 14.8314C6.87616 14.3017 10.291 14.1314 14.4817 16.4857C18.6653 18.8354 22.1023 17.9977 23.8337 16.9909" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                <div class="p-3 bg-[#D1BE4F] rounded-full">
+                                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M22.1666 17.5V22.0371C22.1666 24.6328 21.3084 25.6667 18.537 25.6667H9.46288C6.86712 25.6667 5.83325 24.8085 5.83325 22.0371V17.5C5.83325 12.9897 9.4896 9.33337 13.9999 9.33337C18.5103 9.33337 22.1666 12.9897 22.1666 17.5Z" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+                                        <path d="M18.6666 17.5C18.6666 14.9228 16.5772 12.8334 13.9999 12.8334C11.4226 12.8334 9.33325 14.9228 9.33325 17.5" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+                                        <path d="M14 19.8333L15.1667 17.5" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+                                        <path d="M19.0312 5.83337H8.9689C7.93804 5.83337 7.4226 5.83337 6.96906 5.65599C6.81841 5.59708 6.6743 5.5242 6.53885 5.43843C6.13107 5.18025 5.84516 4.77502 5.27335 3.96455C4.82769 3.33292 4.60487 3.01709 4.68168 2.75886C4.706 2.67716 4.74887 2.60144 4.80733 2.53702C4.99212 2.33337 5.39382 2.33337 6.19723 2.33337H21.803C22.6064 2.33337 23.008 2.33337 23.1928 2.53702C23.2513 2.60144 23.2942 2.67716 23.3185 2.75886C23.3953 3.01709 23.1724 3.33292 22.7269 3.96455C22.155 4.77501 21.8691 5.18026 21.4613 5.43843C21.3258 5.5242 21.1817 5.59708 21.0311 5.65599C20.5775 5.83337 20.0621 5.83337 19.0312 5.83337Z" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+                                        <path d="M16.3334 9.33337V5.83337M11.6667 9.33337V5.83337" stroke="white" stroke-width="1.5" stroke-linecap="round" />
                                     </svg>
                                 </div>
-                                <h1>Kelembapan <br> Udara</h1>
+                                <h1>Sisa Pakan <br> Ikan</h1>
                             </div>
-                            <h1 class="text-4xl mx-auto w-fit mt-4 lg:mt-0 lg:mx-0">{{ $latest->humidity ?? 0}} %</h1>
+                            <h1 class="text-4xl mx-auto w-fit mt-4 lg:mt-0 lg:mx-0">{{ $data->feed_storages->first()?->storage }} Kg</h1>
                         </div>
                         <hr class="my-4">
                         <div class="flex justify-between">
-                            <h1>Rata-rata hari ini</h1>
-                            <h1>{{ round($daily->avg_daily_humidity ?? 0, 2) }} %</h1>
+                            <h1>Estimasi habis dalam</h1>
+                            <h1>4 hari</h1>
                         </div>
                         <div class="flex justify-between">
-                            <h1>Rata-rata minggu ini</h1>
-                            <h1>{{ round($weekly->avg_weekly_humidity ?? 0, 2) }} %</h1>
+                            <h1>Terakhir isi ulang</h1>
+                            <h1>{{ date('d M Y', strtotime($data->feed_config->last_refill)) ?? '-' }}</h1>
                         </div>
                     </div>
-                    <div class="bg-[#FFFFF0] rounded-[20px] p-10">
-                        <div class="block lg:flex items-center justify-between mb-6 text-gray-800">
+                    <div class="row-span-2 bg-[#FFFFF0] rounded-[20px] p-10">
+                        <div class="flex items-center justify-between mb-6 text-gray-800">
                             <div class="flex items-center gap-4 text-xl">
-                                <div class="p-3 bg-[#62A19E] rounded-full">
-                                    <svg width="29" height="29" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M10.9998 6.33337C10.9998 5.40512 11.3686 4.51488 12.025 3.8585C12.6813 3.20212 13.5716 2.83337 14.4998 2.83337C15.4281 2.83337 16.3183 3.20212 16.9747 3.8585C17.6311 4.51488 17.9998 5.40512 17.9998 6.33337V15.6667C18.9793 16.4013 19.7028 17.4254 20.0678 18.5941C20.4329 19.7627 20.421 21.0166 20.0338 22.178C19.6467 23.3395 18.9039 24.3498 17.9106 25.0656C16.9174 25.7815 15.7242 26.1667 14.4998 26.1667C13.2755 26.1667 12.0822 25.7815 11.089 25.0656C10.0958 24.3498 9.35301 23.3395 8.96585 22.178C8.57869 21.0166 8.56679 19.7627 8.93184 18.5941C9.29689 17.4254 10.0204 16.4013 10.9998 15.6667V6.33337ZM14.4998 5.16671C14.1904 5.16671 13.8937 5.28962 13.6749 5.50842C13.4561 5.72721 13.3332 6.02396 13.3332 6.33337V16.2909C13.3332 16.4957 13.2793 16.6968 13.1769 16.8742C13.0745 17.0515 12.9272 17.1988 12.7498 17.3012C12.0825 17.6863 11.5608 18.2809 11.2659 18.9928C10.9709 19.7046 10.9191 20.4939 11.1184 21.2382C11.3178 21.9825 11.7572 22.6402 12.3685 23.1093C12.9797 23.5784 13.7287 23.8326 14.4993 23.8326C15.2698 23.8326 16.0188 23.5784 16.6301 23.1093C17.2413 22.6402 17.6807 21.9825 17.8801 21.2382C18.0794 20.4939 18.0276 19.7046 17.7326 18.9928C17.4377 18.2809 16.916 17.6863 16.2487 17.3012C16.0715 17.1987 15.9245 17.0513 15.8223 16.874C15.7201 16.6967 15.6664 16.4955 15.6665 16.2909V6.33337C15.6665 6.02396 15.5436 5.72721 15.3248 5.50842C15.106 5.28962 14.8093 5.16671 14.4998 5.16671Z" fill="white" />
+                                <div class="p-3 bg-[#D1BE4F] rounded-full">
+                                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M18.6666 2.33337V7.00004M9.33325 2.33337V7.00004" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M15.1667 4.66663H12.8333C8.43355 4.66663 6.23367 4.66663 4.86683 6.03346C3.5 7.4003 3.5 9.60018 3.5 14V16.3333C3.5 20.733 3.5 22.933 4.86683 24.2998C6.23367 25.6666 8.43355 25.6666 12.8333 25.6666H15.1667C19.5664 25.6666 21.7664 25.6666 23.1331 24.2998C24.5 22.933 24.5 20.733 24.5 16.3333V14C24.5 9.60018 24.5 7.4003 23.1331 6.03346C21.7664 4.66663 19.5664 4.66663 15.1667 4.66663Z" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M3.5 11.6666H24.5" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M13.9947 16.3334H14.0052M13.9947 21H14.0052M18.6561 16.3334H18.6666M9.33325 16.3334H9.34372M9.33325 21H9.34372" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                 </div>
-                                <h1>Temperature <br> Udara</h1>
+                                <h1 class="text-lg lg:text-xl">Jadwal <br> Pemberian Pakan</h1>
                             </div>
-                            <h1 class="text-4xl mx-auto w-fit mt-4 lg:mt-0 lg:mx-0">{{ $latest->temperature ?? 0 }} °C</h1>
+                            <i
+                                class="bi bi-three-dots-vertical cursor-pointer text-xl px-2 py-1 rounded-full hover:bg-[#D1BE4F] hover:text-[#FFFFF0]"></i>
                         </div>
                         <hr class="my-4">
-                        <div class="flex justify-between">
-                            <h1>Rata-rata hari ini</h1>
-                            <h1>{{ round($daily->avg_daily_temperature ?? 0, 2) }} °C</h1>
-                        </div>
-                        <div class="flex justify-between">
-                            <h1>Rata-rata minggu ini</h1>
-                            <h1>{{ round($weekly->avg_weekly_temperature ?? 0, 2) }} °C</h1>
+                        <div class="lg:h-[285px] lg:overflow-auto">
+                            @foreach($data->feed_schedules as $schedule)
+                            <div class="p-3 mb-3 rounded-2xl flex items-center justify-between bg-[rgba(209,190,79,0.08)] text-gray-800">
+                                <div>
+                                    <h1 class="text-2xl">{{ date('H:i', strtotime($schedule->time)) }} - {{ $schedule->portion }} <span class="text-lg">Kg</span></h1>
+                                    <h1>
+                                        @foreach($schedule->dayCrop as $day)
+                                        {{ $day . " " }}
+                                        @endforeach
+                                    </h1>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <label class="inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" name="mode" value="1" class="sr-only peer" {{ $schedule->active_status ? 'checked' : '' }}>
+                                        <div class="relative w-14 h-7 bg-gray-200 rounded-full peer  peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition- peer-checked:bg-[#D1BE4F]"></div>
+                                    </label>
+                                </div>
+                            </div>
+                            @endforeach
                         </div>
                     </div>
                     <div class="bg-[#FFFFF0] rounded-[20px] p-10">
@@ -280,45 +282,18 @@
                             <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M15.3646 22.9167L15.7812 19.5833C16.0069 19.4965 16.2194 19.3924 16.4187 19.2708C16.6181 19.1493 16.8135 19.0191 17.0052 18.8802L20.1042 20.1823L22.9688 15.2344L20.2865 13.2031C20.3038 13.0816 20.3125 12.9646 20.3125 12.8521V12.149C20.3125 12.0358 20.3038 11.9184 20.2865 11.7969L22.9688 9.76562L20.1042 4.81771L17.0052 6.11979C16.8142 5.9809 16.6146 5.85069 16.4062 5.72917C16.1979 5.60764 15.9896 5.50347 15.7812 5.41667L15.3646 2.08333H9.63542L9.21875 5.41667C8.99305 5.50347 8.78021 5.60764 8.58021 5.72917C8.38021 5.85069 8.18507 5.9809 7.99479 6.11979L4.89583 4.81771L2.03125 9.76562L4.71354 11.7969C4.69618 11.9184 4.6875 12.0358 4.6875 12.149V12.851C4.6875 12.9642 4.70486 13.0816 4.73958 13.2031L2.05729 15.2344L4.92188 20.1823L7.99479 18.8802C8.18576 19.0191 8.38542 19.1493 8.59375 19.2708C8.80208 19.3924 9.01042 19.4965 9.21875 19.5833L9.63542 22.9167H15.3646ZM12.4479 16.1458C11.441 16.1458 10.5816 15.7899 9.86979 15.0781C9.15799 14.3663 8.80208 13.5069 8.80208 12.5C8.80208 11.4931 9.15799 10.6337 9.86979 9.92187C10.5816 9.21007 11.441 8.85417 12.4479 8.85417C13.4722 8.85417 14.3361 9.21007 15.0396 9.92187C15.7431 10.6337 16.0944 11.4931 16.0937 12.5C16.0931 13.5069 15.7413 14.3663 15.0385 15.0781C14.3358 15.7899 13.4722 16.1458 12.4479 16.1458Z" fill="#1C1C1C" />
                             </svg>
-                            <h1 class="text-lg lg:text-xl">Pengaturan treshold kelembapan</h1>
+                            <h1 class="text-lg lg:text-xl">Pengaturan ukuran pelet</h1>
                         </div>
-                        <p>Atur batas atas dan batas bawah kelembapan greenhouse anda</p>
+                        <p>Atur ukuran pelet agar pemberian pakan dapat sesuai dengan takaran yang ditentukan</p>
                         <div class="block lg:flex items-center justify-between text-4xl text-gray-800 mt-7">
                             <div class="text-3xl flex justify-center">
-                                <span>{{ round($device->$config_table->lower_threshold, 1) }} %</span>&nbsp;&nbsp;-&nbsp;&nbsp;<span>{{ round($device->$config_table->upper_threshold, 1) }} %</span>
+                                {{ $data->feed_config->feed_size }} mm
                             </div>
-                            <button id="change-threshold" type="button" class="w-full lg:w-30">
+                            <button id="pelet-config" type="button" class="w-full lg:w-40">
                                 <h1
-                                    class="cursor-pointer border rounded-xl border-[#62A19E] text-base px-5 py-1 hover:text-[#FFFFF0] hover:bg-[#62A19E] flex justify-center mt-4 lg:mt-0">
+                                    class="cursor-pointer border rounded-xl border-[#D1BE4F] text-base px-5 py-1 hover:text-[#FFFFF0] hover:bg-[#D1BE4F] flex justify-center mt-4 lg:mt-0">
                                     Ubah</h1>
                             </button>
-                        </div>
-                    </div>
-                    <div class="bg-[#FFFFF0] rounded-[20px] p-10">
-                        <div class="block lg:flex  items-center justify-between mb-6 text-gray-800">
-                            <div class="flex items-center gap-4 text-xl">
-                                <svg width="53" height="53" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg" class="p-3 bg-[#62A19E] rounded-full">
-                                    <g clip-path="url(#clip0_456_344)">
-                                        <path d="M14.5 25C13.6833 25 12.9931 24.718 12.4292 24.1541C11.8653 23.5902 11.5833 22.9 11.5833 22.0833C11.5833 21.2666 11.8653 20.5764 12.4292 20.0125C12.9931 19.4486 13.6833 19.1666 14.5 19.1666C15.3167 19.1666 16.0069 19.4486 16.5708 20.0125C17.1347 20.5764 17.4167 21.2666 17.4167 22.0833C17.4167 22.9 17.1347 23.5902 16.5708 24.1541C16.0069 24.718 15.3167 25 14.5 25ZM7.90833 18.4083L5.45833 15.9C6.60556 14.7527 7.95228 13.8439 9.4985 13.1735C11.0447 12.503 12.7119 12.1674 14.5 12.1666C16.2881 12.1658 17.9557 12.5061 19.5027 13.1875C21.0497 13.8688 22.396 14.7924 23.5417 15.9583L21.0917 18.4083C20.2361 17.5527 19.2444 16.8819 18.1167 16.3958C16.9889 15.9097 15.7833 15.6666 14.5 15.6666C13.2167 15.6666 12.0111 15.9097 10.8833 16.3958C9.75556 16.8819 8.76389 17.5527 7.90833 18.4083ZM2.95 13.45L0.5 11C2.28889 9.17218 4.37917 7.74302 6.77083 6.71246C9.1625 5.6819 11.7389 5.16663 14.5 5.16663C17.2611 5.16663 19.8375 5.6819 22.2292 6.71246C24.6208 7.74302 26.7111 9.17218 28.5 11L26.05 13.45C24.5528 11.9527 22.8176 10.7814 20.8443 9.93596C18.8711 9.09052 16.7563 8.6674 14.5 8.66663C12.2437 8.66585 10.1293 9.08896 8.15683 9.93596C6.18439 10.783 4.44878 11.9543 2.95 13.45Z" fill="white" />
-                                    </g>
-                                    <defs>
-                                        <clipPath id="clip0_456_344">
-                                            <rect width="28" height="28" fill="white" transform="translate(0.5 0.5)" />
-                                        </clipPath>
-                                    </defs>
-                                </svg>
-                                <h1>Konektivitas <br> Perangkat IoT</h1>
-                            </div>
-                            <h1 class="text-4xl mt-4 lg:mt-0 w-fit mx-auto lg:mx-0">{{ $device->status ? 'Online' : 'Offline' }}</h1>
-                        </div>
-                        <hr class="my-4">
-                        <div class="flex justify-between">
-                            <h1>Durasi terhubung hari ini</h1>
-                            <h1>{{ $latest->online_duration ?? 0}}</h1>
-                        </div>
-                        <div class="flex justify-between">
-                            <h1>Update data terakhir</h1>
-                            <h1>{{ $latest?->created_at?->format('d-m-Y - H:i:s') ?? '-'}}</h1>
                         </div>
                     </div>
                 </div>
@@ -342,13 +317,13 @@
 
                     <div class="bg-[#FFFFF0] rounded-[20px] text-3xl p-11">
                         <div class="flex items-center gap-6 mb-8 lg:ml-5">
-                            <svg width="53" height="53" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg" class="p-3 bg-[#62A19E] rounded-full">
+                            <svg width="53" height="53" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg" class="p-3 bg-[#D1BE4F] rounded-full">
                                 <path d="M15.125 28.875V19.8L8.73125 26.2281L6.77188 24.2687L13.2 17.875H4.125V15.125H13.2L6.77188 8.73125L8.73125 6.77188L15.125 13.2V4.125H17.875V13.2L24.2687 6.77188L26.2281 8.73125L19.8 15.125H28.875V17.875H19.8L26.2281 24.2687L24.2687 26.2281L17.875 19.8V28.875H15.125Z" fill="white" />
                             </svg>
                             <h1>Log Aktivitas</h1>
                         </div>
 
-                        @foreach($device->devices_logs as $log)
+                        @foreach($data->devices_logs as $log)
 
                         <div class="flex justify-between items-center lg:mx-5">
                             <div class="flex items-center gap-4">
@@ -374,7 +349,6 @@
                         <hr class="my-5 text-gray-400">
 
                         @endforeach
-
                     </div>
                 </div>
             </section>
@@ -391,32 +365,18 @@
     const myChart = new Chart(ctx, {
         type: 'line',
         data: {
-            // labels: ['Januari', 'Februari', 'Maret', 'April', 'Mei'],
             labels: [],
             datasets: [{
-                    label: 'Kelembapan',
-                    // data: [12, 43, 54, 12, 66],
-                    data: [],
-                    groundColor: '#03D076',
-                    pointBackgroundColor: 'rgb(255,255,255)',
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    borderColor: '#03D076',
-                    borderWidth: 1,
-                    borderRadius: 6
-                },
-                {
-                    label: 'Temperatur',
-                    data: [23, 63, 33, 94, 23],
-                    groundColor: '#FFC42E',
-                    pointBackgroundColor: 'rgb(255,255,255)',
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    borderColor: '#FFC42E',
-                    borderWidth: 1,
-                    borderRadius: 6
-                }
-            ]
+                label: 'Sisa Pakan',
+                data: [],
+                groundColor: '#03D076',
+                pointBackgroundColor: 'rgb(255,255,255)',
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                borderColor: '#03D076',
+                borderWidth: 1,
+                borderRadius: 6
+            }]
         },
         options: {
             responsive: true,
@@ -453,19 +413,18 @@
                     display: true,
                     title: {
                         display: true,
-                        text: 'Temperatur dan Kelembapan'
+                        text: 'Sisa Pakan (Kg)'
                     }
                 }
             }
         }
     });
 
-    function loadData() {
-        fetch("{{ route('chart.get',['virdi_type' => $device->virdi_type, 'device_id' => $device->id , 'periode' => 'monthly'])}}")
+    function loadChart() {
+        fetch("{{ route('chart.get',['virdi_type' => $data->virdi_type, 'device_id' => $data->id , 'periode' => 'monthly']) }}")
             .then(response => response.json())
             .then(data => {
-                const values_temp = data.map(row => row.temperature);
-                const values_hum = data.map(row => row.humidity);
+                const values_storage = data.map(row => row.storage);
                 const labels = data.map(row => {
                     const date = new Date(row.created_at);
                     return date.toLocaleString('id-ID', {
@@ -475,14 +434,14 @@
                 });
 
                 myChart.data.labels = labels;
-                myChart.data.datasets[0].data = values_hum;
-                myChart.data.datasets[1].data = values_temp;
+                myChart.data.datasets[0].data = values_storage;
                 myChart.update();
             })
             .catch(error => console.error('Error:', error));
     }
+    loadChart();
 
-    loadData();
+    setInterval(loadChart, 120000);
 </script>
 
 <script>
@@ -515,7 +474,6 @@
 </script>
 
 <script>
-    // sidebar
     const hamburger = document.getElementById('hamburger');
     const sidebar = document.getElementById('sidebar');
     const sidebarClose = document.getElementById('sidebar-close');
@@ -543,45 +501,32 @@
         overlay.classList.add('opacity-40');
     })
 
-    // form config (threshold / size)
-    const configOpen = document.getElementById('change-threshold');
-    const formThresClose = document.getElementById('form-exit');
-    const form = document.getElementById('threshold-form');
+    const peletConfigOpen = document.getElementById('pelet-config');
+    const peletConfigClose = document.getElementById('form-exit');
+    const form = document.getElementById('pelet-form');
 
-    configOpen.addEventListener("click", () => {
+    peletConfigOpen.addEventListener("click", () => {
         overlay.classList.remove('hidden');
         form.classList.remove('hidden');
     })
 
-    formThresClose.addEventListener("click", () => {
+    peletConfigClose.addEventListener("click", () => {
         overlay.classList.add('hidden');
         form.classList.add('hidden');
     })
 </script>
 
-<!-- form number spinner -->
 <script>
-    const btnUpDec = document.getElementById('up-thres-decrease');
-    const btnUpIn = document.getElementById('up-thres-increase');
-    const btnLowDec = document.getElementById('low-thres-decrease');
-    const btnLowIn = document.getElementById('low-thres-increase');
-    const lowThres = document.getElementById('low-threshold');
-    const upThres = document.getElementById('up-threshold');
+    const btnd = document.getElementById('decrease');
+    const btni = document.getElementById('increase');
+    const input = document.getElementById('input');
 
-    btnUpDec.addEventListener("click", () => {
-        upThres.value = parseInt(upThres.value) - 1;
+    btnd.addEventListener("click", () => {
+        input.value = (parseFloat(input.value) - 0.1).toFixed(1);
     });
 
-    btnUpIn.addEventListener("click", () => {
-        upThres.value = parseInt(upThres.value) + 1;
-    });
-
-    btnLowDec.addEventListener("click", () => {
-        lowThres.value = parseInt(lowThres.value) - 1;
-    });
-
-    btnLowIn.addEventListener("click", () => {
-        lowThres.value = parseInt(lowThres.value) + 1;
+    btni.addEventListener("click", () => {
+        input.value = (parseFloat(input.value) + 0.1).toFixed(1);
     });
 </script>
 

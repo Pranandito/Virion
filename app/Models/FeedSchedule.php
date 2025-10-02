@@ -18,4 +18,16 @@ class FeedSchedule extends Model
     {
         return $this->belongsTo(Device::class);
     }
+
+    public function config()
+    {
+        return $this->hasOneThrough(
+            FeedConfig::class,
+            Device::class,
+            'id',            // foreign key di Device yang dirujuk Schedule.device_id
+            'device_id',     // foreign key di Config
+            'device_id',     // local key di Schedule
+            'id'             // local key di Device);
+        );
+    }
 }

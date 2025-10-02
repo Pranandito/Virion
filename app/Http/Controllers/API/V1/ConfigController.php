@@ -7,6 +7,7 @@ use App\Models\HumidaConfig;
 use App\Models\SiramConfig;
 use App\Models\Device;
 use App\Models\DevicesLog;
+use App\Models\FeedConfig;
 use Illuminate\Http\Request;
 
 class ConfigController extends Controller
@@ -42,6 +43,38 @@ class ConfigController extends Controller
         }
 
         $log = $this->logging($validated['device_id'], 'mode', $validated['name']);
+
+        return response()->json([
+            'status_update' => $update,
+            'status_logging' => $log
+        ]);
+    }
+
+    public function editFeedSize(Request $request)
+    {
+        $validated = $request->validate([
+            'owner_id' => 'required|integer',
+            'device_id' => 'required|integer',
+            'feed_size' => 'required|decimal:1',
+            'name' => 'required|string'
+        ]);
+
+        $deviceCheck = Device::where('id', $validated['device_id'])
+            ->where('owner_id', $validated['owner_id'])->first();
+
+        if ($deviceCheck == null) {
+            return response()->json([
+                'status' => 'gagal',
+                'message' => 'Pemilik device tidak valid'
+            ]);
+        }
+
+        $update = FeedConfig::where('device_id', $validated['device_id'])
+            ->update([
+                'feed_size' => $validated['feed_size'],
+            ]);
+
+        $log = $this->logging($validated['device_id'], 'config', $validated['name']);
 
         return response()->json([
             'status_update' => $update,
@@ -99,6 +132,8 @@ class ConfigController extends Controller
             'name' => "Nama Perangkat $data berhasil diubah",
             'online' => "Koneksi perangkat $data terhubung",
             'offline' => "Koneksi perangkat $data terputus",
+            'feed_success_Auto' => "$data memberi pakan sesuai jadwal",
+            'feed_success_Manual' => "$data memberi pakan melalui mode manual",
         ];
 
         $log = DevicesLog::insert([

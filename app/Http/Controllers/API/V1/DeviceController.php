@@ -184,4 +184,11 @@ class DeviceController extends Controller
 
         return response()->json([$devices, $data, $last]);
     }
+
+    public function feed()
+    {
+        $feed = Device::where('virdi_type', 'Feed')->with('feed_config', 'feed_storage', 'feed_schedule')->get();
+
+        return response()->json($feed);
+    }
 }

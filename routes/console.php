@@ -8,6 +8,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use App\Http\Controllers\API\V1\ConfigController;
+use App\Models\FeedConfig;
 use App\Models\FeedStorage;
 
 Artisan::command('inspire', function () {
@@ -55,3 +56,12 @@ Schedule::call(function () {
 
     return response()->json([$data, $last]);
 })->everyMinute();
+
+Schedule::call(function () {
+    $reset_daily = FeedConfig::query()->update(['success_daily' => 0]);
+})->daily();
+
+
+Schedule::call(function () {
+    $reset_daily = FeedConfig::query()->update(['success_weekly' => 0]);
+})->weekly();

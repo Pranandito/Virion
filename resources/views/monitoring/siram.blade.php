@@ -241,7 +241,7 @@
                                 </div>
                                 <h1>Kelembapan <br> Udara</h1>
                             </div>
-                            <h1 class="text-4xl mx-auto w-fit mt-4 lg:mt-0 lg:mx-0">{{ $latest->humidity ?? '-' }} %</h1>
+                            <h1 id="humidity" class="text-4xl mx-auto w-fit mt-4 lg:mt-0 lg:mx-0">{{ $latest->humidity ?? '-' }} %</h1>
                         </div>
                         <hr class="my-4">
                         <div class="flex justify-between">
@@ -263,7 +263,7 @@
                                 </div>
                                 <h1>Temperature <br> Udara</h1>
                             </div>
-                            <h1 class="text-4xl mx-auto w-fit mt-4 lg:mt-0 lg:mx-0">{{ $latest->temperature ?? '-' }} °C</h1>
+                            <h1 id="temperature" class="text-4xl mx-auto w-fit mt-4 lg:mt-0 lg:mx-0">{{ $latest->temperature ?? '-' }} °C</h1>
                         </div>
                         <hr class="my-4">
                         <div class="flex justify-between">
@@ -309,16 +309,16 @@
                                 </svg>
                                 <h1>Konektivitas <br> Perangkat IoT</h1>
                             </div>
-                            <h1 class="text-4xl mt-4 lg:mt-0 w-fit mx-auto lg:mx-0">{{ $device->status ? 'Online' : 'Offline' }}</h1>
+                            <h1 id="online_status" class="text-4xl mt-4 lg:mt-0 w-fit mx-auto lg:mx-0">{{ $device->status ? 'Online' : 'Offline' }}</h1>
                         </div>
                         <hr class="my-4">
                         <div class="flex justify-between">
                             <h1>Durasi terhubung hari ini</h1>
-                            <h1>{{ $latest->online_duration ?? '-' }}</h1>
+                            <h1 id="online_duration">{{ $latest->online_duration ?? '-' }}</h1>
                         </div>
                         <div class="flex justify-between">
                             <h1>Update data terakhir</h1>
-                            <h1>{{ $latest?->created_at?->format('d-m-Y - H:i:s') ?? '-' }}</h1>
+                            <h1 id="last_update">{{ $latest?->created_at?->format('d-m-Y - H:i:s') ?? '-' }}</h1>
 
                         </div>
                     </div>
@@ -392,10 +392,10 @@
     const myChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: ['Januari', 'Februari', 'Maret', 'April', 'Mei'],
+            labels: [],
             datasets: [{
                     label: 'Kelembapan',
-                    data: [12, 43, 54, 12, 66],
+                    data: [],
                     groundColor: '#03D076',
                     pointBackgroundColor: 'rgb(255,255,255)',
                     pointRadius: 5,
@@ -406,7 +406,7 @@
                 },
                 {
                     label: 'Temperatur',
-                    data: [23, 63, 33, 94, 23],
+                    data: [],
                     groundColor: '#FFC42E',
                     pointBackgroundColor: 'rgb(255,255,255)',
                     pointRadius: 5,
@@ -421,11 +421,6 @@
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                // title: {
-                //     display: true,
-                //     text: 'Chart.js Line Chart - Cubic interpolation mode'
-                // },
-
                 legend: {
                     position: 'bottom',
                     labels: {
@@ -444,6 +439,13 @@
                     display: true,
                     title: {
                         display: true
+                    },
+                    ticks: {
+                        callback: function(val, index) {
+                            const maxLabels = 10; // maksimum label yang mau ditampilkan
+                            const step = Math.ceil(this.getLabels().length / maxLabels);
+                            return index % step === 0 ? this.getLabelForValue(val) : '';
+                        }
                     }
                 },
                 y: {
@@ -456,6 +458,61 @@
             }
         }
     });
+
+    function loadChart() {
+        fetch("{{ route('chart.get',['virdi_type' => $device->virdi_type, 'device_id' => $device->id , 'periode' => 'monthly']) }}")
+            .then(response => response.json())
+            .then(data => {
+                const values_temp = data.map(row => row.temperature);
+                const values_hum = data.map(row => row.humidity);
+                const labels = data.map(row => {
+                    const date = new Date(row.created_at);
+                    return date.toLocaleString('id-ID', {
+                        day: '2-digit',
+                        month: '2-digit',
+                    });
+                });
+
+                myChart.data.labels = labels;
+                myChart.data.datasets[0].data = values_hum;
+                myChart.data.datasets[1].data = values_temp;
+                myChart.update();
+            })
+            .catch(error => console.error('Error:', error));
+    }
+    loadChart();
+
+    setInterval(loadChart, 120000);
+</script>
+
+<script>
+    function formatDateTime(dateStr) {
+        const date = new Date(dateStr);
+        const d = String(date.getDate()).padStart(2, '0');
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const y = date.getFullYear();
+        const h = String(date.getHours()).padStart(2, '0');
+        const min = String(date.getMinutes()).padStart(2, '0');
+        const s = String(date.getSeconds()).padStart(2, '0');
+        return `${d}-${m}-${y} - ${h}:${min}:${s}`;
+    }
+
+
+    function loadData() {
+        fetch("{{ route('chart.get',['virdi_type' => $device->virdi_type, 'device_id' => $device->id , 'periode' => 'now']) }}")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('humidity').textContent = data.siram_sensors[0].humidity;
+                document.getElementById('temperature').textContent = data.siram_sensors[0].temperature;
+                document.getElementById('online_status').textContent = data.status === 1 ? 'online' : 'offline';
+                document.getElementById('online_duration').textContent = data.siram_sensors[0].online_duration;
+                document.getElementById('last_update').textContent = formatDateTime(data.siram_sensors[0].created_at);
+            })
+    }
+
+    loadData();
+
+    setInterval('loadData', 120000);
 </script>
 
 <script>

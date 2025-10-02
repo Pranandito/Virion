@@ -9,7 +9,7 @@ class FeedConfig extends Model
     //
     protected $fillable = [
         "pelet_size",
-        "lasr_refill"
+        "last_refill"
     ];
 
     public function device()
