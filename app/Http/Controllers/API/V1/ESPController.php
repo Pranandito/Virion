@@ -39,8 +39,6 @@ class ESPController
             // Feed
             'storage' => 'sometimes|required|decimal:1',
             'refill' => 'sometimes|required|boolean',
-
-            'created_at' => 'sometimes|required|timestamp',
         ]);
 
         $sensorModels = [
@@ -86,14 +84,83 @@ class ESPController
         $validated['device_id'] = $device_id;
         $store = $sensorModels[$virdiType]::insert($validated);
 
+        $config = $this->getConfig($virdiType, $device_id);
+
         return response()->json([
-            'validated' => $validated,
-            'data' => $lastData,
-            'lastOn' => $lastOnDuration,
-            'status_lastReffill' => $refill,
-            'selisih' => $selisihWaktu,
-            'lastData' => empty($lastData),
-            'status' => $store
+            // 'validated' => $validated,
+            // 'data' => $lastData,
+            // 'lastOn' => $lastOnDuration,
+            // 'status_lastReffill' => $refill,
+            // 'selisih' => $selisihWaktu,
+            // 'lastData' => empty($lastData),
+            'saving_status' => $store,
+            'config' => $config
+        ]);
+    }
+
+    public function storeRecover(Request $request, $virdiType, $device_id)
+    {
+        $validated = $request->validate([
+
+            'data' => 'required|array',
+
+            // Humida & Siram
+            'data.*.temperature' => 'sometimes|required|decimal:2',  // kalau 44.40 kirim string "44.40"
+            'data.*.humidity' => 'sometimes|required|decimal:2',
+
+            // Aqua
+            'data.*.turbidity' => 'sometimes|required|decimal:2',
+            'data.*.pH' => 'sometimes|required|decimal:2',
+            'data.*.oxygen' => 'sometimes|required|decimal:2',
+            'data.*.batt_voltage' => 'sometimes|required|decimal:3',
+
+            // Feed
+            'data.*.storage' => 'sometimes|required|decimal:1',
+
+            'data.*.created_at' => 'sometimes|required|date',
+        ]);
+
+        $sensorModels = [
+            'Siram' => SiramSensor::class,
+            'Humida' => HumidaSensor::class,
+            'Aqua' => AquaSensor::class,
+            'Feed' => FeedStorage::class
+        ];
+
+        $records = [];
+        foreach ($validated['data'] as $rowData) {
+            if ($virdiType == 'Feed') {
+                $records[] = [
+                    "device_id" => $device_id,
+                    "storage" => $rowData['storage'],
+                    "online_duration" => Carbon::createFromTimestamp(0),
+                    "created_at" => $rowData['created_at']
+                ];
+            } else {
+                $records[] = [
+                    "device_id" => $device_id,
+                    "temperature" => $rowData['temperature'],
+                    "humidity" => $rowData['humidity'],
+                    "online_duration" => Carbon::createFromTimestamp(0),
+                    "created_at" => $rowData['created_at']
+                ];
+            }
+        }
+        $store = $sensorModels[$virdiType]::insert($records);
+
+        // $config = $this->getConfig($virdiType, $device_id);
+
+        return response()->json([
+            // 'validated' => $validated,
+            // 'data' => $lastData,
+            // 'lastOn' => $lastOnDuration,
+            // 'status_lastReffill' => $refill,
+            // 'selisih' => $selisihWaktu,
+            // 'lastData' => empty($lastData),
+            'saving_status' => $store,
+            'data' => $records
+
+            // 'config' => $config
         ]);
     }
 
@@ -113,15 +180,13 @@ class ESPController
                 ->where('device_id', $device_id)->first();
         }
 
-        return response()->json([
-            'config' => $config
-        ]);
+        return $config;
     }
 
     public function getSchedule($device_id)
     {
         $schedules = FeedSchedule::select('id', 'device_id', 'active_status', 'time', 'days', 'portion')
-            ->where('device_id', $device_id)->get();
+            ->where('device_id', $device_id)->where('active_status', 1)->get();
 
         foreach ($schedules as $schedule) {
             $schedule->days = explode(",", $schedule->days);

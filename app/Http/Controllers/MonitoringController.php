@@ -41,7 +41,7 @@ class MonitoringController extends Controller
 
         $config_table = $config_table_map[$virdi_type];
 
-        $device = Device::select('name', 'status', 'id', 'virdi_type')->with([$config_table, 'devices_logs' => function ($query) {
+        $device = Device::select('name', 'status', 'id', 'virdi_type', 'serial_number')->with([$config_table, 'devices_logs' => function ($query) {
             $query->latest()->limit(5);
         }])->where('id', $device_id)->first();
 
@@ -149,9 +149,17 @@ class MonitoringController extends Controller
             }
         ])->find($device_id);
 
+        $portion_total = 0;
+        $day_total = 0;
+        $schedule_total = 0;
 
         foreach ($data->feed_schedules as $schedule) {
-            if (substr_count($schedule->days, ",") == 6) {
+            $day_count = substr_count($schedule->days, ",") + 1;
+            $portion_total += $day_count * $schedule->portion;
+            $day_total += $day_count;
+            $schedule_total++;
+
+            if ($day_count == 7) {
                 $dayCrop = ["Setiap hari"];
             } else {
                 $dayList = explode(",", $schedule->days);
@@ -164,8 +172,16 @@ class MonitoringController extends Controller
             $schedule->dayCrop = $dayCrop;
         }
 
+        $average_daily_feeding = $day_total / $schedule_total;
+        $average_feed = $portion_total / $day_total;
+        if (isset($data->feed_storages[0])) {
+            $estimation = ceil($data->feed_storages[0]->storage / ($average_feed * $average_daily_feeding)) + 1;
+        } else {
+            $estimation = "-";
+        }
+
         $devices = Device::select('id', 'owner_id', 'serial_number', 'name', 'virdi_type')->where('owner_id', Auth::user()->id)->get();
 
-        return view('monitoring.Feed', compact('data', 'devices'));
+        return view('monitoring.Feed', compact('data', 'devices', 'estimation', 'average_feed', 'day_total', 'portion_total'));
     }
 }

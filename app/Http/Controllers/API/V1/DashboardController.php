@@ -67,7 +67,7 @@ class DashboardController
                 break;
 
             case "monthly":
-                $sensorData = $sensorModels[$virdiType]::where('device_id', $device_id)->whereBetween('created_at', [now()->subMonth(), now()])->get();
+                $sensorData = $sensorModels[$virdiType]::where('device_id', $device_id)->whereBetween('created_at', [now()->subMonth(), now()])->orderBy('created_at', 'asc')->get();
                 break;
         }
         return response()->json(
@@ -125,26 +125,6 @@ class DashboardController
             'avg_daily' => $daily,
             'avg_weekly' => $weekly,
             'latest' => $latest,
-        ]);
-    }
-
-    public function add_schedule(Request $request, $device_id)
-    {
-        $validated = $request->validate([
-            'days' => 'required|array',
-            'days.*' => 'in:senin,selasa,rabu,kamis,jumat,sabtu,minggu',
-            'time' => 'required|date_format:H:i',
-            'portion' => 'required|decimal:2'
-        ]);
-
-        $validated['device_id'] = $device_id;
-        $validated['days'] = implode(",", $validated['days']);
-        $insert = FeedSchedule::insert($validated);
-
-        return response()->json([
-            'status_penyimpanan' => $insert,
-            'data' => $validated,
-            'today' => today()
         ]);
     }
 

@@ -58,10 +58,14 @@ Schedule::call(function () {
 })->everyMinute();
 
 Schedule::call(function () {
-    $reset_daily = FeedConfig::query()->update(['success_daily' => 0]);
-})->daily();
+    $reset_daily = FeedConfig::query()->update(['success_daily' => 0, 'manual_daily' => 0]);
+
+    return $reset_daily;
+})->everySecond();
 
 
 Schedule::call(function () {
-    $reset_daily = FeedConfig::query()->update(['success_weekly' => 0]);
-})->weekly();
+    $reset_weekly = FeedConfig::query()->update(['success_weekly' => 0, 'manual_weekly' => 0]);
+
+    return $reset_weekly;
+})->everySecond();

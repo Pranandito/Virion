@@ -34,13 +34,16 @@
     </div>
     <p class="mb-3">Masukkan serial number pada box untuk menambah alat</p>
 
-    <h1>Serial Number:</h1>
-    <input type="text" id="serial-num-input" placeholder="X-00000"
-        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-l block w-full p-2.5">
-    <button id="btn-submit-tambah-alat" type="button"
-        class="cursor-pointer mt-3 w-full border border-[#4CAF50] hover:bg-[#4CAF50] hover:text-[#FFFFF0] rounded-xl">
-        <h1 class="py-2">Tambahkan</h1>
-    </button>
+    <form action="{{ route('add-owner') }}" method="POST">
+        @csrf
+        <label for="serial-num-input">Serial Number:</label>
+        <input type="text" id="serial-num-input" placeholder="X-00000" require minlength="7" name="serial_number"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-l block w-full p-2.5">
+        <button id="btn-submit-tambah-alat" type="submit"
+            class="cursor-pointer mt-3 w-full border border-[#4CAF50] hover:bg-[#4CAF50] text-gray-900 hover:text-[#FFFFF0] rounded-xl">
+            <h1 class="py-2">Tambahkan</h1>
+        </button>
+    </form>
 </aside>
 
 <!-- form edit profile -->
@@ -76,9 +79,7 @@
                             Logout
                         </h1>
                     </a>
-
                 </form>
-
             </div>
         </nav>
 
@@ -86,7 +87,7 @@
             <!-- Section Profile -->
             <section class="lg:w-5/12 bg-[#FFFFF0] rounded-3xl p-3">
                 <img src="{{ asset('images/header.png') }}" alt="" class="rounded-2xl w-full">
-                <div class="pl-7 mb-[52px] relative h-fit">
+                <div class="pl-7 mb-12 relative h-fit">
                     <div
                         class="absolute -top-0 -translate-y-1/2 z-10 rounded-full bg-[#FFFFF0] flex justify-center items-center">
                         <img src="{{ asset('images/profile_pict.png') }}" alt="" class="rounded-full p-2.5">
@@ -120,7 +121,7 @@
 
                 @foreach($logs as $log)
 
-                <a href="" class="group">
+                <a href="{{ route('monitoring.' . $log->device->virdi_type, ['serial_number' => $log->device->serial_number]) }}" class="group">
                     <div class="flex justify-between items-center mx-5">
                         <div class="flex items-center gap-4">
                             <x-dynamic-component
@@ -132,13 +133,13 @@
                             </div>
                         </div>
                         <div class="text-right text-base text-gray-400 hidden lg:block">
-                            <p>Baru Saja</p>
+                            <!-- <p>Baru Saja</p> -->
                             <p>{{ $log->created_at->format('H:i:s') }}</p>
                         </div>
                     </div>
                     <p class="text-base text-gray-400 mt-2 mx-5 lg:hidden">{{ $log->activity }}</p>
                     <div class="flex justify-between text-right text-base text-gray-400 mx-5 lg:hidden">
-                        <p>Baru Saja</p>
+                        <!-- <p>Baru Saja</p> -->
                         <p>{{ $log->created_at->format('H:i:s') }}</p>
                     </div>
                 </a>
@@ -243,7 +244,7 @@
                     data: [15, 25, 35, 30, 15, 20, 10, 25, 15, 18, 17, 20],
                     backgroundColor: '#D1BE4F',
                     stack: 'combined',
-                    borderRadius: 8, // bar rounded
+                    borderRadius: 8,
                     barPercentage: 0.5,
                     categoryPercentage: 0.6
                 },

@@ -9,65 +9,60 @@ use App\Models\Device;
 use App\Models\DevicesLog;
 use App\Models\FeedConfig;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ConfigController extends Controller
 {
     public function editMode(Request $request)
     {
         $validated = $request->validate([
-            'owner_id' => 'required|integer',
+            // 'owner_id' => 'required|integer',
             'device_id' => 'required|integer',
             'mode' => 'required|in:Auto,On,Off',
-            'name' => 'required|string'
+            'name' => 'required|string',
+            'virdi_type' => 'required|string',
         ]);
 
-        $deviceCheck = Device::where('id', $validated['device_id'])
-            ->where('owner_id', $validated['owner_id'])->first();
+        // $deviceCheck = Device::where('id', $validated['device_id'])
+        //     ->where('owner_id', $validated['owner_id'])->first();
 
-        if ($deviceCheck == null) {
-            return response()->json([
-                'status' => 'gagal',
-                'message' => 'Pemilik device tidak valid'
-            ]);
-        }
+        // if ($deviceCheck == null) {
+        //     return response()->json([
+        //         'status' => 'gagal',
+        //         'message' => 'Pemilik device tidak valid'
+        //     ]);
+        // }
 
         $configModels = [
             'Siram' => SiramConfig::class,
             'Humida' => HumidaConfig::class,
-            // 'feed' => FeedConfig::class
+            'Feed' => FeedConfig::class
         ];
 
-        if (isset($configModels[$deviceCheck->virdi_type])) {
-            $update = $configModels[$deviceCheck->virdi_type]::where('device_id', $validated['device_id'])
-                ->update(['mode' => $validated['mode']]);
-        }
+        $update = $configModels[$validated['virdi_type']]::where('device_id', $validated['device_id'])
+            ->update(['mode' => $validated['mode']]);
 
         $log = $this->logging($validated['device_id'], 'mode', $validated['name']);
 
-        return response()->json([
-            'status_update' => $update,
-            'status_logging' => $log
-        ]);
+        // return response()->json([
+        //     'status_update' => $update,
+        //     'status_logging' => $log
+        // ]);
+
+        return back();
     }
 
     public function editFeedSize(Request $request)
     {
         $validated = $request->validate([
-            'owner_id' => 'required|integer',
+            // 'owner_id' => 'required|integer',
             'device_id' => 'required|integer',
-            'feed_size' => 'required|decimal:1',
-            'name' => 'required|string'
+            'feed_size' => 'required|numeric',
+            'name' => 'required|string',
+            'serial_number' => 'required|string',
         ]);
 
-        $deviceCheck = Device::where('id', $validated['device_id'])
-            ->where('owner_id', $validated['owner_id'])->first();
-
-        if ($deviceCheck == null) {
-            return response()->json([
-                'status' => 'gagal',
-                'message' => 'Pemilik device tidak valid'
-            ]);
-        }
+        $validated['feed_size'] = number_format($validated['feed_size'], 1, '.');
 
         $update = FeedConfig::where('device_id', $validated['device_id'])
             ->update([
@@ -76,52 +71,58 @@ class ConfigController extends Controller
 
         $log = $this->logging($validated['device_id'], 'config', $validated['name']);
 
-        return response()->json([
-            'status_update' => $update,
-            'status_logging' => $log
-        ]);
+        // return response()->json([
+        //     'status_update' => $update,
+        //     'status_logging' => $log
+        // ]);
+
+        return redirect()->route('monitoring.Feed', ['serial_number' => $validated['serial_number']]);
     }
 
     public function editThreshold(Request $request)
     {
         $validated = $request->validate([
-            'owner_id' => 'required|integer',
+            // 'owner_id' => 'required|integer',
             'device_id' => 'required|integer',
-            'upper_threshold' => 'required|decimal:2',
-            'lower_threshold' => 'required|decimal:2',
-            'name' => 'required|string'
+            'upper_threshold' => 'required|numeric',
+            'lower_threshold' => 'required|numeric',
+            'name' => 'required|string',
+            'serial_number' => 'required|string',
+            'virdi_type' => 'required|string',
         ]);
 
-        $deviceCheck = Device::where('id', $validated['device_id'])
-            ->where('owner_id', $validated['owner_id'])->first();
+        // $deviceCheck = Device::where('id', $validated['device_id'])
+        //     ->where('owner_id', Auth::user()->id)->first();
 
-        if ($deviceCheck == null) {
-            return response()->json([
-                'status' => 'gagal',
-                'message' => 'Pemilik device tidak valid'
-            ]);
-        }
+        // if ($deviceCheck == null) {
+        //     return response()->json([
+        //         'status' => 'gagal',
+        //         'message' => 'Pemilik device tidak valid'
+        //     ]);
+        // }
+
+        $validated['lower_threshold'] = number_format($validated['lower_threshold'], 2, '.');
+        $validated['upper_threshold'] = number_format($validated['upper_threshold'], 2, '.');
 
         $configModels = [
             'Siram' => SiramConfig::class,
             'Humida' => HumidaConfig::class,
-            // 'feed' => FeedConfig::class
         ];
 
-        if (isset($configModels[$deviceCheck->virdi_type])) {
-            $update = $configModels[$deviceCheck->virdi_type]::where('device_id', $validated['device_id'])
-                ->update([
-                    'upper_threshold' => $validated['upper_threshold'],
-                    'lower_threshold' => $validated['lower_threshold']
-                ]);
-        }
+        $update = $configModels[$validated['virdi_type']]::where('device_id', $validated['device_id'])
+            ->update([
+                'upper_threshold' => $validated['upper_threshold'],
+                'lower_threshold' => $validated['lower_threshold']
+            ]);
 
         $log = $this->logging($validated['device_id'], 'config', $validated['name']);
 
-        return response()->json([
-            'status_update' => $update,
-            'status_logging' => $log
-        ]);
+        // return response()->json([
+        //     'status_update' => $update,
+        //     'status_logging' => $log
+        // ]);
+
+        return redirect()->route('monitoring.' . $validated['virdi_type'], ['serial_number' => $validated['serial_number']]);
     }
 
     public function logging($device_id, $activity, $data)
@@ -134,6 +135,7 @@ class ConfigController extends Controller
             'offline' => "Koneksi perangkat $data terputus",
             'feed_success_Auto' => "$data memberi pakan sesuai jadwal",
             'feed_success_Manual' => "$data memberi pakan melalui mode manual",
+            'add_schedule' => "Menambahkan jadwal pemberian pakan $data",
         ];
 
         $log = DevicesLog::insert([

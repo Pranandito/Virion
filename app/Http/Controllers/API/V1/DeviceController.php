@@ -9,6 +9,7 @@ use App\Models\AquaSensor;
 use App\Models\Device;
 use App\Models\DevicesLog;
 use App\Models\FeedConfig;
+use App\Models\FeedSchedule;
 use App\Models\FeedStorage;
 use App\Models\HumidaConfig;
 use App\Models\HumidaSensor;
@@ -16,6 +17,7 @@ use App\Models\SiramConfig;
 use App\Models\SiramSensor;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DeviceController extends Controller
 {
@@ -59,7 +61,7 @@ class DeviceController extends Controller
     public function addOwner(Request $request)
     {
         $validated = $request->validate([
-            'owner_id' => 'required|integer',
+            // 'owner_id' => 'required|integer',
             'serial_number' => 'required|string'
         ]);
 
@@ -80,9 +82,10 @@ class DeviceController extends Controller
             ]);
         }
 
-        $owner = Device::where('serial_number', $validated['serial_number'])->update(['owner_id' => $validated['owner_id']]);
+        // $owner = Device::where('serial_number', $validated['serial_number'])->update(['owner_id' => $validated['owner_id']]);
+        $owner = Device::where('serial_number', $validated['serial_number'])->update(['owner_id' => Auth::user()->id]);
 
-        return response()->json($owner);
+        return redirect()->route('dashboard');
     }
 
     public function editDevice(Request $request)
@@ -130,17 +133,16 @@ class DeviceController extends Controller
         ]);
     }
 
-    public function tss()
+    public function tss(Request $request)
     {
-        $data = Device::find(18)->first();
+        $validated = $request->validate([
+            'id' => 'required|integer',
+            'active_status' => 'required|integer',
+        ]);
 
-        $selisih = $data->created_at->diffInMinutes(Carbon::now());
+        $update = FeedSchedule::where('id', $validated['id'])->update(['active_status' => $validated['active_status']]);
 
-        if ($selisih > 5) {
-            $selisih = 2;
-        }
-
-        return response()->json($data->created_at == Carbon::today());
+        return $update;
     }
 
     public function statusCheck()

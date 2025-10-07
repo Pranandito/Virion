@@ -14,6 +14,10 @@ class FeedSchedule extends Model
         "days"
     ];
 
+    // protected $casts = [
+    //     'active_status' => 'boolean',
+    // ];
+
     public function device()
     {
         return $this->belongsTo(Device::class);

@@ -13,35 +13,43 @@
 
 <x-beranda.side-bar :devices="$devices" />
 
-<body class="bg-[#F4F7F3]">
-
-    <aside id="overlay" class="fixed top-0 right-0 left-0 bottom-0 z-10 bg-gray-600 opacity-40 hidden cursor-pointer">
-    </aside>
-
-    <!-- form update treshold kelembapan -->
-    <aside id="threshold-form" class="hidden">
-        <div
-            class="fixed w-90 lg:w-150 bg-[#FFFFF0] top-1/2 right-1/2 -translate-y-1/2 translate-x-1/2 z-20 rounded-2xl p-11">
-            <div class="flex items-center justify-between mb-1">
-                <div class="flex items-center text-gray-800 gap-2 text-xl mb-2">
-                    <img src="setting.svg" alt="">
-                    <h1 class="text-lg lg:text-xl">Pengaturan treshold kelembapan</h1>
-                </div>
-                <button id="form-exit" type="button" class="px-2 py-1 rounded-full hover:bg-[#D1D1C6] cursor-pointer">
-                    <i class="bi bi-x-lg"></i>
-                </button>
+<!-- form update treshold kelembapan -->
+<aside id="threshold-form" class="hidden">
+    <div class="fixed w-90 lg:w-150 bg-[#FFFFF0] top-1/2 right-1/2 -translate-y-1/2 translate-x-1/2 z-20 rounded-2xl p-11">
+        <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center text-gray-800 gap-2 text-xl mb-2">
+                <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15.3646 22.9167L15.7812 19.5833C16.0069 19.4965 16.2194 19.3924 16.4187 19.2708C16.6181 19.1493 16.8135 19.0191 17.0052 18.8802L20.1042 20.1823L22.9688 15.2344L20.2865 13.2031C20.3038 13.0816 20.3125 12.9646 20.3125 12.8521V12.149C20.3125 12.0358 20.3038 11.9184 20.2865 11.7969L22.9688 9.76562L20.1042 4.81771L17.0052 6.11979C16.8142 5.9809 16.6146 5.85069 16.4062 5.72917C16.1979 5.60764 15.9896 5.50347 15.7812 5.41667L15.3646 2.08333H9.63542L9.21875 5.41667C8.99305 5.50347 8.78021 5.60764 8.58021 5.72917C8.38021 5.85069 8.18507 5.9809 7.99479 6.11979L4.89583 4.81771L2.03125 9.76562L4.71354 11.7969C4.69618 11.9184 4.6875 12.0358 4.6875 12.149V12.851C4.6875 12.9642 4.70486 13.0816 4.73958 13.2031L2.05729 15.2344L4.92188 20.1823L7.99479 18.8802C8.18576 19.0191 8.38542 19.1493 8.59375 19.2708C8.80208 19.3924 9.01042 19.4965 9.21875 19.5833L9.63542 22.9167H15.3646ZM12.4479 16.1458C11.441 16.1458 10.5816 15.7899 9.86979 15.0781C9.15799 14.3663 8.80208 13.5069 8.80208 12.5C8.80208 11.4931 9.15799 10.6337 9.86979 9.92187C10.5816 9.21007 11.441 8.85417 12.4479 8.85417C13.4722 8.85417 14.3361 9.21007 15.0396 9.92187C15.7431 10.6337 16.0944 11.4931 16.0937 12.5C16.0931 13.5069 15.7413 14.3663 15.0385 15.0781C14.3358 15.7899 13.4722 16.1458 12.4479 16.1458Z" fill="#1C1C1C" />
+                </svg>
+                <h1 class="text-lg lg:text-xl">Pengaturan treshold kelembapan</h1>
             </div>
-            <p>Atur batas atas dan batas bawah kelembapan greenhouse anda</p>
-            <div class="mt-4 lg:flex items-center justify-between">
+            <button id="form-exit" type="button" class="px-2 py-1 rounded-full hover:bg-[#D1D1C6] cursor-pointer">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <p>Atur batas atas dan batas bawah kelembapan greenhouse anda</p>
+
+        <form method="POST" action="{{ route('edit-threshold') }}" class="mt-4">
+            @csrf
+            <div class="lg:flex justify-between">
                 <div>
-                    <div class="bg-white border border-gray-200 rounded-lg" data-hs-input-number="">
+                    <!-- Batas Bawah (Lower Threshold) -->
+                    <label for="up-threshold" class="ms-1">Batas bawah:</label>
+                    <div class="bg-white border border-gray-200 rounded-lg w-60 mt-1 mb-3" data-hs-input-number="">
                         <div class="w-full flex justify-between items-center gap-x-1">
-                            <form method="POST" action="" class="grow py-2 px-3 flex">
+                            <div class="grow py-2 px-3 flex">
                                 <input class="w-full p-0 bg-transparent border-0 text-gray-800 focus:ring-0"
-                                    type="number" aria-roledescription="Number field" min="0" readonly value="40"
-                                    data-hs-input-number-input="" id="up-threshold">
+                                    type="number"
+                                    name="lower_threshold"
+                                    aria-roledescription="Number field"
+                                    step="0.01"
+                                    min="0"
+                                    max="99.99"
+                                    value="{{ $device->$config_table->lower_threshold, 1 }}"
+                                    data-hs-input-number-input=""
+                                    id="up-threshold">
                                 <span class="text-gray-300">%</span>
-                            </form>
+                            </div>
                             <div class="flex items-center -gap-y-px divide-x divide-gray-200 border-s border-gray-200">
                                 <button type="button"
                                     class="size-10 inline-flex justify-center items-center gap-x-2 text-sm font-medium last:rounded-e-lg bg-white text-gray-800 hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
@@ -65,15 +73,25 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="bg-white border border-gray-200 rounded-lg mt-4" data-hs-input-number="">
+                </div>
+                <div>
+                    <!-- Batas Atas (Upper Threshold) -->
+                    <label for="up-threshold" class="ms-1">Batas atas:</label>
+                    <div class="bg-white border border-gray-200 rounded-lg mt-1 w-60" data-hs-input-number="">
                         <div class="w-full flex justify-between items-center gap-x-1">
-                            <form method="POST" action="" class="grow py-2 px-3 flex">
+                            <div class="grow py-2 px-3 flex">
                                 <input class="w-full p-0 bg-transparent border-0 text-gray-800 focus:ring-0"
-                                    type="number" aria-roledescription="Number field" min="0" readonly value="50"
-                                    data-hs-input-number-input="" id="low-threshold">
+                                    type="number"
+                                    name="upper_threshold"
+                                    aria-roledescription="Number field"
+                                    step="0.01"
+                                    min="0"
+                                    max="99.99"
+                                    value="{{ $device->$config_table->upper_threshold, 1 }}"
+                                    data-hs-input-number-input=""
+                                    id="low-threshold">
                                 <span class="text-gray-300">%</span>
-                            </form>
+                            </div>
                             <div class="flex items-center -gap-y-px divide-x divide-gray-200 border-s border-gray-200">
                                 <button type="button"
                                     class="size-10 inline-flex justify-center items-center gap-x-2 text-sm font-medium last:rounded-e-lg bg-white text-gray-800 hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
@@ -98,14 +116,27 @@
                         </div>
                     </div>
                 </div>
-                <button type="submit" id="submit-form-humidity" class="w-full lg:w-40 mt-6 lg:mt-0">
-                    <h1
-                        class="cursor-pointer border rounded-xl border-[#62A19E] text-base px-5 py-1 hover:text-[#FFFFF0] hover:bg-[#62A19E] flex justify-center">
-                        Simpan</h1>
-                </button>
             </div>
-        </div>
+
+            <input type="hidden" name="virdi_type" value="{{ $device->virdi_type }}">
+            <input type="hidden" name="device_id" value="{{ $device->id }}">
+            <input type="hidden" name="serial_number" value="{{ $device->serial_number }}">
+            <input type="hidden" name="name" value="{{ $device->name }}">
+
+            <button type="submit" id="submit-form-humidity" class="w-full lg:mt-1 mt-3">
+                <h1 class="cursor-pointer border rounded-xl border-[#62A19E] text-base px-5 py-1 hover:text-[#FFFFF0] hover:bg-[#62A19E] flex justify-center">
+                    Simpan
+                </h1>
+            </button>
+        </form>
+    </div>
+</aside>
+
+<body class="bg-[#F4F7F3]">
+
+    <aside id="overlay" class="fixed top-0 right-0 left-0 bottom-0 z-10 bg-gray-600 opacity-40 hidden cursor-pointer">
     </aside>
+
 
     <!-- navbar -->
     <div class="mx-8 lg:mx-20 pt-8 text-2xl mb-10">
@@ -167,58 +198,7 @@
                                 <h1 class="text-gray-800 text-base">Mode Humidifier</h1>
                                 <p class="hidden lg:block">Atur mode humidifier anda</p>
                             </div>
-                            <div class="relative inline-block">
-                                <button id="dropdownRadioHelperButton" data-dropdown-toggle="dropdownRadioHelper"
-                                    class="cursor-pointer text-gray-800 bg-[#FFFFF0] rounded-xl px-5 py-1.5 text-center inline-flex items-center border-[#62A19E] border hover:bg-[#62A19E] hover:text-[#FFFFF0]"
-                                    type="button">Mode<svg class="w-2.5 h-2.5 ms-3" aria-hidden="true"
-                                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                            stroke-width="2" d="m1 1 4 4 4-4" />
-                                    </svg>
-                                </button>
-
-                                <!-- Dropdown menu -->
-                                <div id="dropdownRadioHelper"
-                                    class="absolute left-1/3 lg:left-1/2 -translate-x-1/2 mt-2 z-50 hidden bg-[#FFFFF0] divide-y divide-gray-100 rounded-lg shadow-sm w-60">
-                                    <ul class="p-3 space-y-1 text-sm text-gray-700"
-                                        aria-labelledby="dropdownRadioHelperButton">
-                                        <li>
-                                            <div class="flex p-2 rounded-sm hover:bg-gray-100">
-                                                <div class="flex items-center h-5">
-                                                    <input id="helper-radio-4" name="helper-radio" type="radio" value=""
-                                                        class="w-4 h-4 text-gray-800 bg-[#FFFFF0] border-gray-300">
-                                                </div>
-                                                <div class="ms-2 text-sm">
-                                                    <label for="helper-radio-4" class="font-medium text-gray-900">
-                                                        <div>Automatic</div>
-                                                        <p id="helper-radio-text-4"
-                                                            class="text-xs font-normal text-gray-500">
-                                                            Menyalakan humidifier secara otomatis ketika dibutuhkan
-                                                        </p>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </li>
-                                        <li>
-                                            <div class="flex p-2 rounded-sm hover:bg-gray-100">
-                                                <div class="flex items-center h-5">
-                                                    <input id="helper-radio-5" name="helper-radio" type="radio" value=""
-                                                        class="w-4 h-4 text-gray-800 bg-[#FFFFF0] border-gray-300">
-                                                </div>
-                                                <div class="ms-2 text-sm">
-                                                    <label for="helper-radio-5" class="font-medium text-gray-900">
-                                                        <div>Manual - On</div>
-                                                        <p id="helper-radio-text-5"
-                                                            class="text-xs font-normal text-gray-500">
-                                                            Menyalakan humidifier sekarang
-                                                        </p>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
+                            <x-monitoring.mode-select :mode="$device->humida_config->mode" :name="$device->name" :id="$device->id" :virdi_type="$device->virdi_type" color="border-[#62A19E] hover:bg-[#62A19E]" />
                         </div>
                         <h1 class="text-lg">Tips</h1>
                         <ul class="list-disc list-inside pl-2">
@@ -285,7 +265,7 @@
                         <p>Atur batas atas dan batas bawah kelembapan greenhouse anda</p>
                         <div class="block lg:flex items-center justify-between text-4xl text-gray-800 mt-7">
                             <div class="text-3xl flex justify-center">
-                                <span>{{ round($device->$config_table->lower_threshold, 1) }} %</span>&nbsp;&nbsp;-&nbsp;&nbsp;<span>{{ round($device->$config_table->upper_threshold, 1) }} %</span>
+                                <span>{{ round($device->$config_table->lower_threshold, 1) }}</span>&nbsp;&nbsp;-&nbsp;&nbsp;<span>{{ round($device->$config_table->upper_threshold, 1) }} %</span>
                             </div>
                             <button id="change-threshold" type="button" class="w-full lg:w-30">
                                 <h1
@@ -361,13 +341,13 @@
                                 </div>
                             </div>
                             <div class="text-right text-base text-gray-400 hidden lg:block">
-                                <p>Baru Saja</p>
+                                <!-- <p>Baru Saja</p> -->
                                 <p>{{ $log->created_at->format('H:i:s') }}</p>
                             </div>
                         </div>
                         <p class="text-base text-gray-400 mt-2 lg:hidden">{{ $log->activity }}</p>
                         <div class="flex justify-between text-right text-base text-gray-400 lg:hidden">
-                            <p>Baru Saja</p>
+                            <!-- <p>Baru Saja</p> -->
                             <p>{{ $log->created_at->format('H:i:s') }}</p>
                         </div>
 

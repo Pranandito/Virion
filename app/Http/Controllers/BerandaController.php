@@ -27,7 +27,7 @@ class BerandaController extends Controller
 
 
         $devices_id = $user->devices->pluck('id');
-        $logs = DevicesLog::with('device:id,name,virdi_type')
+        $logs = DevicesLog::with('device:id,name,virdi_type,serial_number')
             ->whereIn('device_id', $devices_id)
             ->latest()
             ->limit(6)
@@ -40,29 +40,6 @@ class BerandaController extends Controller
             'Feed' => FeedStorage::class,
         ];
 
-        // $dataStream = [];
-
-        // $dataSizeRow = [    // ukuran data pada tabel sensor per baris (byte)
-        //     'Siram' => 2,
-        //     'Humida' => 2,
-        //     'Aqua' => 1,
-        //     'Feed' => 1,
-        // ];
-
-        // foreach ($user->devices as $device) {
-        //     $dates = $sensorModels[$device->virdi_type]::where('device_id', $device->id)
-        //         ->selectRaw('DATE(created_at) as dates')
-        //         ->distinct()->limit(30)->get();
-
-        //     foreach ($dates as $date) {
-        //         $row = $sensorModels[$device->virdi_type]::select('id', 'created_at')
-        //             ->whereDate('created_at', $date->dates)->count();
-
-        //         $dataSize = $dataSizeRow[$device->virdi_type] * $row;
-        //         $dataStream[$date->dates] = strtoupper($dataSize);
-        //     }
-        // }
-
         $iconMap = [
             'Humida' => 'humida-logo',
             'Siram' => 'siram-logo',
@@ -71,4 +48,29 @@ class BerandaController extends Controller
 
         return view('dashboard', compact('user', 'logs', 'iconMap'));
     }
+
+    // public function dataStream(){
+    //     $dataStream = [];
+
+    //     $dataSizeRow = [    // ukuran data pada tabel sensor per baris (byte)
+    //         'Siram' => 2,
+    //         'Humida' => 2,
+    //         'Aqua' => 1,
+    //         'Feed' => 1,
+    //     ];
+
+    //     foreach ($user->devices as $device) {
+    //         $dates = $sensorModels[$device->virdi_type]::where('device_id', $device->id)
+    //             ->selectRaw('DATE(created_at) as dates')
+    //             ->distinct()->limit(30)->get();
+
+    //         foreach ($dates as $date) {
+    //             $row = $sensorModels[$device->virdi_type]::select('id', 'created_at')
+    //                 ->whereDate('created_at', $date->dates)->count();
+
+    //             $dataSize = $dataSizeRow[$device->virdi_type] * $row;
+    //             $dataStream[$date->dates] = strtoupper($dataSize);
+    //         }
+    //     }
+    // }
 }
