@@ -182,6 +182,10 @@ class MonitoringController extends Controller
 
         $devices = Device::select('id', 'owner_id', 'serial_number', 'name', 'virdi_type')->where('owner_id', Auth::user()->id)->get();
 
-        return view('monitoring.Feed', compact('data', 'devices', 'estimation', 'average_feed', 'day_total', 'portion_total'));
+        $scheduling = new ScheduleController;
+        $update_daily = $scheduling->update_daily($device_id);
+        $update_weekly = $scheduling->update_weekly($device_id);
+
+        return view('monitoring.feed', compact('data', 'devices', 'estimation', 'average_feed', 'day_total', 'portion_total'));
     }
 }

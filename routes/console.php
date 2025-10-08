@@ -61,11 +61,11 @@ Schedule::call(function () {
     $reset_daily = FeedConfig::query()->update(['success_daily' => 0, 'manual_daily' => 0]);
 
     return $reset_daily;
-})->everySecond();
+})->daily();
 
 
 Schedule::call(function () {
     $reset_weekly = FeedConfig::query()->update(['success_weekly' => 0, 'manual_weekly' => 0]);
 
     return $reset_weekly;
-})->everySecond();
+})->weekly();
