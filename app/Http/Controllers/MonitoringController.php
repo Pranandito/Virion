@@ -87,9 +87,11 @@ class MonitoringController extends Controller
 
 
             // --------------------------
+            $low_threshold = $device->$config_table->lower_threshold - ($device->$config_table->lower_threshold * 0.05) ?? 50;
+            $upper_threshold = $device->$config_table->upper_threshold + ($device->$config_table->upper_threshold * 0.05) ?? 70;
             $threshold = [
-                'humidity' => ['low' => 50.0, 'high' => 70.0],
-                'temperature' => ['low' => 20.0, 'high' => 30.0],
+                'humidity' => ['low' => $low_threshold, 'high' => $upper_threshold],
+                'temperature' => ['low' => 20.0, 'high' => 35.0],
             ];
 
             $index_map =
@@ -136,6 +138,10 @@ class MonitoringController extends Controller
         // $virdi_type = $serial_number[0];
         $device_id = (int) explode('-', $serial_number)[1];
 
+        $scheduling = new ScheduleController;
+        $update_daily = $scheduling->update_daily($device_id);
+        $update_weekly = $scheduling->update_weekly($device_id);
+
         $data = Device::with([
             'feed_config:id,device_id,feed_size,last_refill,mode,total_daily,total_weekly,success_daily,success_weekly,manual_daily,manual_weekly',
             'feed_schedules' => function ($query) {
@@ -172,20 +178,17 @@ class MonitoringController extends Controller
             $schedule->dayCrop = $dayCrop;
         }
 
-        $average_daily_feeding = $day_total / $schedule_total;
-        $average_feed = $portion_total / $day_total;
-        if (isset($data->feed_storages[0])) {
-            $estimation = ceil($data->feed_storages[0]->storage / ($average_feed * $average_daily_feeding)) + 1;
-        } else {
-            $estimation = "-";
+        $estimation = "-";
+        if ($day_total != 0) {
+            $average_daily_feeding = $day_total / $schedule_total;
+            $average_feed = $portion_total / $day_total;
+            if (isset($data->feed_storages[0])) {
+                $estimation = ceil($data->feed_storages[0]->storage / ($average_feed * $average_daily_feeding)) + 1;
+            }
         }
 
         $devices = Device::select('id', 'owner_id', 'serial_number', 'name', 'virdi_type')->where('owner_id', Auth::user()->id)->get();
 
-        $scheduling = new ScheduleController;
-        $update_daily = $scheduling->update_daily($device_id);
-        $update_weekly = $scheduling->update_weekly($device_id);
-
-        return view('monitoring.feed', compact('data', 'devices', 'estimation', 'average_feed', 'day_total', 'portion_total'));
+        return view('monitoring.feed', compact('data', 'devices', 'estimation'));
     }
 }

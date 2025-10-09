@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use App\Http\Controllers\API\V1\ConfigController;
 use App\Models\FeedConfig;
+use App\Models\FeedSchedule;
 use App\Models\FeedStorage;
 
 Artisan::command('inspire', function () {
@@ -62,7 +63,6 @@ Schedule::call(function () {
 
     return $reset_daily;
 })->daily();
-
 
 Schedule::call(function () {
     $reset_weekly = FeedConfig::query()->update(['success_weekly' => 0, 'manual_weekly' => 0]);
