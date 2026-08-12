@@ -7,6 +7,7 @@ use App\Http\Controllers\BerandaController;
 use App\Http\Controllers\MonitoringController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\SiramScheduleController;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
@@ -45,6 +46,9 @@ Route::middleware('auth')->group(function () {
 
     Route::post('schedule/changeActiveStatus', [ScheduleController::class, 'changeStatus'])->name('change-scheduleStatus');
     Route::post('addSchedule/{device_id}', [ScheduleController::class, 'add_schedule'])->name('add-schedule');
+
+    Route::post('schedule/siram/changeActiveStatus', [SiramScheduleController::class, 'changeStatus'])->name('change-scheduleStatus');
+    Route::post('addSchedule/siram/{device_id}', [SiramScheduleController::class, 'add_schedule'])->name('siram.add-schedule');
 });
 
 Route::get('/reset-pass', function () {

@@ -10,6 +10,7 @@ use App\Models\FeedStorage;
 use App\Models\HumidaConfig;
 use App\Models\HumidaSensor;
 use App\Models\SiramConfig;
+use App\Models\SiramSchedule;
 use App\Models\SiramSensor;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -183,13 +184,43 @@ class ESPController
         return $config;
     }
 
-    public function getSchedule($device_id)
+    public function getSchedule($virdiType, $device_id)
     {
-        $schedules = FeedSchedule::select('id', 'device_id', 'active_status', 'time', 'days', 'portion')
-            ->where('device_id', $device_id)->where('active_status', 1)->get();
+        $dayMap = [
+            'minggu' => 0,
+            'senin'  => 1,
+            'selasa' => 2,
+            'rabu'   => 3,
+            'kamis'  => 4,
+            'jumat'  => 5,
+            'sabtu'  => 6,
+        ];
+
+        if ($virdiType == 'Siram') {
+            $schedules = SiramSchedule::select('id', 'device_id', 'active_status', 'time', 'days', 'duration')
+                ->where('device_id', $device_id)->where('active_status', 1)->get();
+        } else {
+            $schedules = FeedSchedule::select('id', 'device_id', 'active_status', 'time', 'days', 'portion')
+                ->where('device_id', $device_id)->where('active_status', 1)->get();
+        }
 
         foreach ($schedules as $schedule) {
-            $schedule->days = explode(",", $schedule->days);
+            $dayNames = explode(",", $schedule->days);
+
+            // Bitmask: bit ke-N = 1 kalau hari N aktif (0=Minggu ... 6=Sabtu)
+            $bitmask = 0;
+            foreach ($dayNames as $d) {
+                $d = strtolower(trim($d));
+                if (isset($dayMap[$d])) {
+                    $bitmask |= (1 << $dayMap[$d]);
+                }
+            }
+            $schedule->days = $dayNames;              // tetap disertakan untuk readability/debug
+            $schedule->days_bitmask = $bitmask;        // dipakai ESP32
+
+            // Detik sejak 00:00:00
+            [$h, $m, $s] = array_map('intval', explode(':', $schedule->time));
+            $schedule->time_seconds = $h * 3600 + $m * 60 + $s;
         }
 
         return response()->json($schedules);

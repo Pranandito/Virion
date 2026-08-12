@@ -41,10 +41,22 @@ class MonitoringController extends Controller
 
         $config_table = $config_table_map[$virdi_type];
 
-        $device = Device::select('name', 'status', 'id', 'virdi_type', 'serial_number')->with([$config_table, 'devices_logs' => function ($query) {
-            $query->latest()->limit(5);
-        }])->where('id', $device_id)->first();
+        if ($virdi_type == 'S') {
+            $device = Device::select('name', 'status', 'id', 'virdi_type', 'serial_number')->with([$config_table, 'devices_logs' => function ($query) {
+                $query->latest()->limit(5);
+            }, 'siram_schedules' => function ($query) {
+                $query->select('id', 'device_id', 'active_status', 'time', 'days', 'duration')->orderBy('active_status', 'desc');
+            }])->where('id', $device_id)->first();
 
+            foreach ($device->siram_schedules as $schedule) {
+                $schedule->day_count = substr_count($schedule->days, ",") + 1;
+            }
+        } else {
+            $device = Device::select('name', 'status', 'id', 'virdi_type', 'serial_number')->with([$config_table, 'devices_logs' => function ($query) {
+                $query->latest()->limit(5);
+            }])->where('id', $device_id)->first();
+        }
+        // dd($device->siram_schedules);
 
         // ------------------------
         $sensorModels = [

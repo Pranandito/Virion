@@ -56,7 +56,7 @@ Schedule::call(function () {
     }
 
     return response()->json([$data, $last]);
-})->everyMinute();
+})->everyTwoMinutes();
 
 Schedule::call(function () {
     $reset_daily = FeedConfig::query()->update(['success_daily' => 0, 'manual_daily' => 0]);

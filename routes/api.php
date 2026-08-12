@@ -37,6 +37,6 @@ Route::prefix('V1')->group(function () {
     Route::post('Esp/Upload/{virdi_type}/{device_id}', [ESPController::class, 'store']);
     Route::post('Esp/Upload/Recover/{virdi_type}/{device_id}', [ESPController::class, 'storeRecover']);
     Route::get('Esp/getConfig/{virdi_type}/{device_id}', [ESPController::class, 'getConfig']);
-    Route::get('Esp/getSchedule/{device_id}', [ESPController::class, 'getSchedule']);
+    Route::get('Esp/getSchedule/{virdi_type}/{device_id}', [ESPController::class, 'getSchedule']);
     Route::post('Esp/feedSuccess/{mode}/{device_id}', [ESPController::class, 'feedSuccess']);
 });

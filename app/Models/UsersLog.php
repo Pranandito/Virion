@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class UsersLog extends Model
 {
+    const UPDATED_AT = null;
     protected $primaryKey = 'log_id';
     protected $fillable = [
         'user_id',

@@ -122,7 +122,7 @@
             <input type="hidden" name="name" value="{{ $device->name }}">
 
             <button type="submit" id="submit-form-humidity" class="w-full lg:mt-1 mt-3">
-                <h1 class="cursor-pointer border rounded-xl border-[#62A19E] text-base px-5 py-1 hover:text-[#FFFFF0] hover:bg-[#62A19E] flex justify-center">
+                <h1 class="cursor-pointer border rounded-xl border-[#80B56F] text-base px-5 py-1 hover:text-[#FFFFF0] hover:bg-[#80B56F] flex justify-center">
                     Simpan
                 </h1>
             </button>
@@ -130,12 +130,200 @@
     </div>
 </aside>
 
+<aside id="schedule-form" class="hidden">
+    <div
+        class="fixed w-90 lg:w-150 bg-[#FFFFF0] top-1/2 right-1/2 -translate-y-1/2 translate-x-1/2 z-20 rounded-2xl p-11 text-base">
+        <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center text-gray-800 gap-5 text-xl mb-2">
+                <svg width="18" height="18" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#clip0_899_2)">
+                        <path d="M10.5 6H6M6 6H1.5M6 6V1.5M6 6V10.5" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </g>
+                    <defs>
+                        <clipPath id="clip0_899_2">
+                            <rect width="12" height="12" fill="white" />
+                        </clipPath>
+                    </defs>
+                </svg>
+                <h1 class="text-lg lg:text-xl">Tambah Jadwal Baru</h1>
+            </div>
+            <button id="form-schedule-exit" type="button" class="px-2 py-1 rounded-full hover:bg-[#D1D1C6] cursor-pointer">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <hr class="border-[#b7b7b7] my-4">
+        <p class="text-[#979797] text-sm hidden lg:block">Tambahkan jadwal penyiraman baru dengan mengatur waktu dan durasi penyiraman sesuai kebutuhan tanaman secara otomatis.</p>
+
+        <form id="form-jadwal" action="{{ route('siram.add-schedule', ['device_id' => $device->id]) }}" method="POST">
+            @csrf
+
+            <!-- Durasi & Waktu Penyiraman (sejajar 2 kolom) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+                <div>
+                    <label for="input-duration" class="block mb-2 text-base text-gray-900">Durasi Penyiraman :</label>
+                    <div class="bg-white border border-gray-200 rounded-lg w-full" data-hs-input-number="">
+                        <div class="w-full flex justify-between items-center gap-x-1">
+                            <div class="grow py-2 px-3 flex">
+                                <input class="w-full p-0 bg-transparent border-0 text-gray-800 focus:ring-0" type="text"
+                                    inputmode="decimal" name="duration" aria-roledescription="Number field"
+                                    autocomplete="off" value="1,0"
+                                    data-hs-input-number-input="" id="input-duration">
+                                <span class="text-gray-300 whitespace-nowrap">Menit</span>
+                            </div>
+                            <div class="flex items-center -gap-y-px divide-x divide-gray-200 border-s border-gray-200">
+                                <button type="button"
+                                    class="size-10 inline-flex justify-center items-center gap-x-2 text-sm font-medium bg-white text-gray-800 hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
+                                    id="decrease-duration">
+                                    <svg class="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M5 12h14"></path>
+                                    </svg>
+                                </button>
+                                <button type="button"
+                                    class="size-10 inline-flex justify-center items-center gap-x-2 text-sm font-medium last:rounded-e-lg bg-white text-gray-800 hover:bg-gray-50 focus:outline-hidden focus:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none"
+                                    id="increase-duration">
+                                    <svg class="shrink-0 size-3.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M5 12h14"></path>
+                                        <path d="M12 5v14"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label for="time" class="block mb-2 text-base text-gray-900">Waktu Penyiraman :</label>
+                    <div class="relative bg-white border border-gray-200 rounded-lg w-full">
+                        <div class="flex items-center justify-between px-3 py-2">
+                            <input
+                                type="time"
+                                id="time"
+                                name="time"
+                                class="w-full p-0 bg-transparent border-0 text-gray-800 focus:ring-0 focus:outline-none leading-none"
+                                min="00:00"
+                                max="24:00"
+                                value="12:00"
+                                required />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pilihan Hari (pill / badge, satu baris) -->
+            <label class="block mb-2 mt-5 text-base text-gray-900">Pilih hari penjadwalan pemberian pakan:</label>
+            <div class="flex flex-wrap gap-2 justify-center">
+                @php
+                $hari = [
+                'senin' => 'Sen',
+                'selasa' => 'Sel',
+                'rabu' => 'Rab',
+                'kamis' => 'Kam',
+                'jumat' => 'Jum',
+                'sabtu' => 'Sab',
+                'minggu' => 'Min',
+                ];
+                @endphp
+
+                @foreach ($hari as $value => $label)
+                <label for="{{ $value }}" class="cursor-pointer">
+                    <input
+                        name="days[]"
+                        id="{{ $value }}"
+                        type="checkbox"
+                        value="{{ $value }}"
+                        class="peer hidden">
+                    <span
+                        class="inline-block px-4 py-1.5 text-sm rounded-full border border-gray-300 text-gray-700 bg-white
+                                   peer-checked:bg-[#80B56F] peer-checked:text-[#FFFFF0] peer-checked:border-[#80B56F]
+                                   hover:bg-[#80B56F] hover:text-[#FFFFF0] transition-colors">
+                        {{ $label }}
+                    </span>
+                </label>
+                @endforeach
+            </div>
+
+            <input type="hidden" name="name" value="{{ $device->name }}">
+
+            <button id="btn-submit-tambah-jadwal" type="submit"
+                class="cursor-pointer mt-6 w-full border border-[#80B56F] hover:bg-[#80B56F] text-gray-900 hover:text-[#FFFFF0] rounded-full transition-colors">
+                <h1 class="py-1.5 text-[#80B56F] hover:text-[#FFFFF0]">Tambahkan</h1>
+            </button>
+        </form>
+    </div>
+</aside>
+
+<aside id="overlay" class="hidden fixed top-0 right-0 left-0 bottom-0 z-10 bg-gray-600 opacity-40 cursor-pointer">
+</aside>
+
+<div id="schedule-detail-modal" class="hidden fixed inset-0 z-20 flex items-center justify-center p-4">
+    <div class="relative bg-[#FFFFF0] rounded-[20px] p-8 w-full max-w-md max-h-[85vh] overflow-y-auto shadow-xl">
+        <div class="flex items-center justify-between mb-6 text-gray-800">
+            <div class="flex items-center gap-3 text-lg">
+                <div class="p-3 bg-[#80B56F] rounded-full">
+                    <svg width="22" height="22" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18.6666 2.33337V7.00004M9.33325 2.33337V7.00004" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M15.1667 4.66663H12.8333C8.43355 4.66663 6.23367 4.66663 4.86683 6.03346C3.5 7.4003 3.5 9.60018 3.5 14V16.3333C3.5 20.733 3.5 22.933 4.86683 24.2998C6.23367 25.6666 8.43355 25.6666 12.8333 25.6666H15.1667C19.5664 25.6666 21.7664 25.6666 23.1331 24.2998C24.5 22.933 24.5 20.733 24.5 16.3333V14C24.5 9.60018 24.5 7.4003 23.1331 6.03346C21.7664 4.66663 19.5664 4.66663 15.1667 4.66663Z" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M3.5 11.6666H24.5" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M13.9947 16.3334H14.0052M13.9947 21H14.0052M18.6561 16.3334H18.6666M9.33325 16.3334H9.34372M9.33325 21H9.34372" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                <h1 class="text-base lg:text-lg font-medium">Detail Jadwal Penyiraman</h1>
+            </div>
+            <button type="button" id="schedule-detail-close" class="text-gray-500">
+                <i class="bi bi-x-lg text-xl"></i>
+            </button>
+        </div>
+
+        <hr class="mb-4 border-[#979797]">
+
+        <div class="flex flex-col gap-3">
+            @forelse($device->siram_schedules as $schedule)
+            @php
+            // Asumsi: $schedule->days berisi array kode hari, mis. ['senin','rabu','jumat']
+            // Jika day_count >= 7, artinya jadwal berlaku setiap hari
+            $dayNames = [
+            'senin' => 'Senin', 'selasa' => 'Selasa', 'rabu' => 'Rabu',
+            'kamis' => 'Kamis', 'jumat' => 'Jumat', 'sabtu' => 'Sabtu', 'minggu' => 'Minggu',
+            ];
+            $isEveryday = $schedule->day_count >= 7;
+            @endphp
+            <div class="bg-white/60 rounded-2xl p-4 border border-[#E5E5DC]">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2 text-gray-800">
+                        <i class="bi bi-clock text-[#80B56F]"></i>
+                        <span class="font-semibold text-base">{{ date('H:i', strtotime($schedule->time)) }}</span>
+                    </div>
+                    <span class="text-sm text-gray-600">
+                        {{ number_format($schedule->duration / 60, 1) }} menit
+                    </span>
+                </div>
+
+                <div class="flex flex-wrap gap-1.5">
+                    @if($isEveryday)
+                    <span class="text-xs bg-[#80B56F] text-white px-2.5 py-1 rounded-full">Setiap Hari</span>
+                    @else
+                    @php
+                    $scheduleDays = is_array($schedule->days) ? $schedule->days : explode(',', $schedule->days ?? '');
+                    @endphp
+
+                    @foreach($scheduleDays as $day)
+                    <span class="text-xs bg-[#80B56F]/15 text-[#5C8A4F] px-2.5 py-1 rounded-full">
+                        {{ $dayNames[$day] ?? ucfirst($day) }}
+                    </span>
+                    @endforeach @endif
+                </div>
+            </div>
+            @empty
+            <p class="text-gray-500 text-sm text-center py-6">Belum ada jadwal penyiraman.</p>
+            @endforelse
+        </div>
+    </div>
+</div>
+
 <body class="bg-[#F4F7F3]">
-
-    <aside id="overlay" class="fixed top-0 right-0 left-0 bottom-0 z-10 bg-gray-600 opacity-40 hidden cursor-pointer">
-    </aside>
-
-
     <!-- navbar -->
     <div class="mx-8 lg:mx-20 pt-8 text-2xl mb-10">
         <nav class="flex justify-between items-center mb-11">
@@ -232,26 +420,40 @@
                         </div>
                     </div>
                     <div class="bg-[#FFFFF0] rounded-[20px] p-10">
-                        <div class="block lg:flex items-center justify-between mb-6 text-gray-800">
+                        <div class="flex items-center justify-between mb-6 text-gray-800">
                             <div class="flex items-center gap-4 text-xl">
                                 <div class="p-3 bg-[#80B56F] rounded-full">
-                                    <svg width="29" height="29" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M10.9998 6.33337C10.9998 5.40512 11.3686 4.51488 12.025 3.8585C12.6813 3.20212 13.5716 2.83337 14.4998 2.83337C15.4281 2.83337 16.3183 3.20212 16.9747 3.8585C17.6311 4.51488 17.9998 5.40512 17.9998 6.33337V15.6667C18.9793 16.4013 19.7028 17.4254 20.0678 18.5941C20.4329 19.7627 20.421 21.0166 20.0338 22.178C19.6467 23.3395 18.9039 24.3498 17.9106 25.0656C16.9174 25.7815 15.7242 26.1667 14.4998 26.1667C13.2755 26.1667 12.0822 25.7815 11.089 25.0656C10.0958 24.3498 9.35301 23.3395 8.96585 22.178C8.57869 21.0166 8.56679 19.7627 8.93184 18.5941C9.29689 17.4254 10.0204 16.4013 10.9998 15.6667V6.33337ZM14.4998 5.16671C14.1904 5.16671 13.8937 5.28962 13.6749 5.50842C13.4561 5.72721 13.3332 6.02396 13.3332 6.33337V16.2909C13.3332 16.4957 13.2793 16.6968 13.1769 16.8742C13.0745 17.0515 12.9272 17.1988 12.7498 17.3012C12.0825 17.6863 11.5608 18.2809 11.2659 18.9928C10.9709 19.7046 10.9191 20.4939 11.1184 21.2382C11.3178 21.9825 11.7572 22.6402 12.3685 23.1093C12.9797 23.5784 13.7287 23.8326 14.4993 23.8326C15.2698 23.8326 16.0188 23.5784 16.6301 23.1093C17.2413 22.6402 17.6807 21.9825 17.8801 21.2382C18.0794 20.4939 18.0276 19.7046 17.7326 18.9928C17.4377 18.2809 16.916 17.6863 16.2487 17.3012C16.0715 17.1987 15.9245 17.0513 15.8223 16.874C15.7201 16.6967 15.6664 16.4955 15.6665 16.2909V6.33337C15.6665 6.02396 15.5436 5.72721 15.3248 5.50842C15.106 5.28962 14.8093 5.16671 14.4998 5.16671Z" fill="white" />
+                                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M18.6666 2.33337V7.00004M9.33325 2.33337V7.00004" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M15.1667 4.66663H12.8333C8.43355 4.66663 6.23367 4.66663 4.86683 6.03346C3.5 7.4003 3.5 9.60018 3.5 14V16.3333C3.5 20.733 3.5 22.933 4.86683 24.2998C6.23367 25.6666 8.43355 25.6666 12.8333 25.6666H15.1667C19.5664 25.6666 21.7664 25.6666 23.1331 24.2998C24.5 22.933 24.5 20.733 24.5 16.3333V14C24.5 9.60018 24.5 7.4003 23.1331 6.03346C21.7664 4.66663 19.5664 4.66663 15.1667 4.66663Z" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M3.5 11.6666H24.5" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+                                        <path d="M13.9947 16.3334H14.0052M13.9947 21H14.0052M18.6561 16.3334H18.6666M9.33325 16.3334H9.34372M9.33325 21H9.34372" stroke="white" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                 </div>
-                                <h1>Temperature <br> Udara</h1>
+                                <div>
+                                    <h1 class="text-base lg:text-xl">Jadwal Penyiraman</h1>
+                                    <button type="button" id="schedule-detail-open" class="text-sm lg:text-base text-[#979797] hover:underline cursor-pointer">
+                                        lebih lengkap →
+                                    </button>
+                                </div>
                             </div>
-                            <h1 id="temperature" class="text-4xl mx-auto w-fit mt-4 lg:mt-0 lg:mx-0">{{ $latest->temperature ?? '-' }} °C</h1>
+                            <div>
+                                <button id="form-schedule-open" type="button" class="">
+                                    <i class="bi bi-three-dots-vertical cursor-pointer text-xl px-2 py-1 rounded-full hover:bg-[#80B56F] hover:text-[#FFFFF0]"></i>
+                                </button>
+                            </div>
                         </div>
                         <hr class="my-4">
+                        @foreach($device->siram_schedules->take(2) as $schedule)
                         <div class="flex justify-between">
-                            <h1>Rata-rata hari ini</h1>
-                            <h1>{{ round($daily->avg_daily_temperature ?? 0, 2) }} °C</h1>
+                            <div class="flex gap-2">
+                                <h1>{{$schedule->day_count < 7 ? 'Harian' : 'Setiap Hari'}}</h1>
+                                <h1>-</h1>
+                                <h1>{{round($schedule->duration/60, 1)}} menit</h1>
+                            </div>
+                            <h1>{{ date('H:i', strtotime($schedule->time)) }}</h1>
                         </div>
-                        <div class="flex justify-between">
-                            <h1>Rata-rata minggu ini</h1>
-                            <h1>{{ round($weekly->avg_weekly_temperature ?? 0, 2) }} °C</h1>
-                        </div>
+                        @endforeach
                     </div>
                     <div class="bg-[#FFFFF0] rounded-[20px] p-10">
                         <div class="flex items-center text-gray-800 gap-2 text-xl mb-2">
@@ -551,6 +753,8 @@
         overlay.classList.add('hidden');
         form.classList.add('hidden');
         overlay.classList.add('opacity-40');
+        scheduleForm.classList.add('hidden');
+        scheduleDetailCard.classList.add('hidden');
     })
 
     // form config (threshold / size)
@@ -566,6 +770,34 @@
     formThresClose.addEventListener("click", () => {
         overlay.classList.add('hidden');
         form.classList.add('hidden');
+    })
+
+    const scheduleFormOpen = document.getElementById('form-schedule-open');
+    const scheduleFormClose = document.getElementById('form-schedule-exit');
+    const scheduleForm = document.getElementById('schedule-form');
+
+    scheduleFormOpen.addEventListener("click", () => {
+        overlay.classList.remove('hidden');
+        scheduleForm.classList.remove('hidden');
+    })
+
+    scheduleFormClose.addEventListener("click", () => {
+        overlay.classList.add('hidden');
+        scheduleForm.classList.add('hidden');
+    })
+
+    const scheduleDetailOpen = document.getElementById('schedule-detail-open');
+    const scheduleDetailClose = document.getElementById('schedule-detail-close');
+    const scheduleDetailCard = document.getElementById('schedule-detail-modal');
+
+    scheduleDetailOpen.addEventListener("click", () => {
+        overlay.classList.remove('hidden');
+        scheduleDetailCard.classList.remove('hidden');
+    })
+
+    scheduleDetailClose.addEventListener("click", () => {
+        overlay.classList.add('hidden');
+        scheduleDetailCard.classList.add('hidden');
     })
 </script>
 
@@ -595,5 +827,59 @@
     });
 </script>
 
+<script>
+    (function() {
+        const input = document.getElementById('input-duration');
+        const btnInc = document.getElementById('increase-duration');
+        const btnDec = document.getElementById('decrease-duration');
+        const form = document.getElementById('form-jadwal');
+
+        const STEP = 0.5;
+        const MIN = 0;
+        const MAX = 120;
+
+        // "1,5" / "1.5" -> 1.5 (number)
+        function parseVal(str) {
+            if (!str) return 0;
+            const num = parseFloat(str.toString().replace(',', '.'));
+            return isNaN(num) ? 0 : num;
+        }
+
+        // 1.5 -> "1,5"
+        function formatVal(num) {
+            return num.toFixed(1).replace('.', ',');
+        }
+
+        function setVal(num) {
+            num = Math.min(MAX, Math.max(MIN, num));
+            num = Math.round(num / STEP) * STEP; // snap ke kelipatan 0.5
+            input.value = formatVal(num);
+        }
+
+        // format awal saat load
+        setVal(parseVal(input.value));
+
+        btnInc.addEventListener('click', () => setVal(parseVal(input.value) + STEP));
+        btnDec.addEventListener('click', () => setVal(parseVal(input.value) - STEP));
+
+        // batasi ketikan manual: hanya angka + 1 koma + 1 digit desimal
+        input.addEventListener('input', () => {
+            let v = input.value.replace(/[^0-9,]/g, '');
+            const parts = v.split(',');
+            if (parts.length > 2) v = parts[0] + ',' + parts.slice(1).join('');
+            const p2 = v.split(',');
+            if (p2[1] && p2[1].length > 1) v = p2[0] + ',' + p2[1].slice(0, 1);
+            input.value = v;
+        });
+
+        // rapikan & clamp saat user selesai mengetik
+        input.addEventListener('blur', () => setVal(parseVal(input.value)));
+
+        // pastikan backend (Laravel) terima format titik, bukan koma
+        form.addEventListener('submit', () => {
+            input.value = parseVal(input.value).toFixed(1);
+        });
+    })();
+</script>
 
 </html>
