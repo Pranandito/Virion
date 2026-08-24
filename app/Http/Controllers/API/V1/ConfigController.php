@@ -135,7 +135,8 @@ class ConfigController extends Controller
             'offline' => "Koneksi perangkat $data terputus",
             'feed_success_Auto' => "$data memberi pakan sesuai jadwal",
             'feed_success_Manual' => "$data memberi pakan melalui mode manual",
-            'add_schedule' => "Menambahkan jadwal pemberian pakan $data",
+            'siram_add_schedule' => "Menambahkan jadwal penyiraman $data",
+            'feed_add_schedule' => "Menambahkan jadwal pemberian pakan $data",
         ];
 
         $log = DevicesLog::insert([

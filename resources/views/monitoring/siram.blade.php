@@ -272,18 +272,14 @@
                 </div>
                 <h1 class="text-base lg:text-lg font-medium">Detail Jadwal Penyiraman</h1>
             </div>
-            <button type="button" id="schedule-detail-close" class="text-gray-500">
+            <button type="button" id="schedule-detail-close" class="text-gray-500 px-2 py-1 rounded-full hover:bg-[#979797]/50">
                 <i class="bi bi-x-lg text-xl"></i>
             </button>
         </div>
 
-        <hr class="mb-4 border-[#979797]">
-
         <div class="flex flex-col gap-3">
             @forelse($device->siram_schedules as $schedule)
             @php
-            // Asumsi: $schedule->days berisi array kode hari, mis. ['senin','rabu','jumat']
-            // Jika day_count >= 7, artinya jadwal berlaku setiap hari
             $dayNames = [
             'senin' => 'Senin', 'selasa' => 'Selasa', 'rabu' => 'Rabu',
             'kamis' => 'Kamis', 'jumat' => 'Jumat', 'sabtu' => 'Sabtu', 'minggu' => 'Minggu',
@@ -301,19 +297,31 @@
                     </span>
                 </div>
 
-                <div class="flex flex-wrap gap-1.5">
-                    @if($isEveryday)
-                    <span class="text-xs bg-[#80B56F] text-white px-2.5 py-1 rounded-full">Setiap Hari</span>
-                    @else
-                    @php
-                    $scheduleDays = is_array($schedule->days) ? $schedule->days : explode(',', $schedule->days ?? '');
-                    @endphp
+                <div class="flex flex-wrap justify-between items-center">
+                    <div class="flex flex-wrap gap-1.5 w-68">
+                        @if($isEveryday)
+                        <span class="text-xs bg-[#80B56F] text-white px-2.5 py-1 rounded-full">Setiap Hari</span>
+                        @else
+                        @php
+                        $scheduleDays = is_array($schedule->days) ? $schedule->days : explode(',', $schedule->days ?? '');
+                        @endphp
 
-                    @foreach($scheduleDays as $day)
-                    <span class="text-xs bg-[#80B56F]/15 text-[#5C8A4F] px-2.5 py-1 rounded-full">
-                        {{ $dayNames[$day] ?? ucfirst($day) }}
-                    </span>
-                    @endforeach @endif
+                        @foreach($scheduleDays as $day)
+                        <span class="text-xs bg-[#80B56F]/15 text-[#5C8A4F] px-2.5 py-1 rounded-full">
+                            {{ $dayNames[$day] ?? ucfirst($day) }}
+                        </span>
+                        @endforeach @endif
+                    </div>
+                    <form action="{{ route('siram.delete-schedule', $schedule->id) }}" method="POST">
+                        @csrf
+                        @method('PATCH')
+                        <button type="submit" class="ml-5 active:scale-[0.95] p-2 rounded-full hover:bg-[#D9534F]/20 hover:underline cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#D9534F" class="bi bi-trash" viewBox="0 0 16 16">
+                                <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z" />
+                                <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z" />
+                            </svg>
+                        </button>
+                    </form>
                 </div>
             </div>
             @empty
@@ -381,8 +389,8 @@
                         <hr class="my-4">
                         <div class="flex items-center justify-between mb-4">
                             <div>
-                                <h1 class="text-gray-800 text-base">Mode Humidifier</h1>
-                                <p class="hidden lg:block">Atur mode humidifier anda</p>
+                                <h1 class="text-gray-800 text-base">Mode Penyiraman</h1>
+                                <p class="hidden lg:block">Atur mode perangkat anda</p>
                             </div>
                             <x-monitoring.mode-select :mode="$device->siram_config->mode" :name="$device->name" :id="$device->id" :virdi_type="$device->virdi_type" color="border-[#80B56F] hover:bg-[#80B56F]" />
                         </div>
@@ -407,16 +415,16 @@
                                 </div>
                                 <h1>Kelembapan <br> Udara</h1>
                             </div>
-                            <h1 id="humidity" class="text-4xl mx-auto w-fit mt-4 lg:mt-0 lg:mx-0">{{ $latest->humidity ?? '-' }} %</h1>
+                            <h1 id="humidity" class="text-4xl mx-auto w-fit mt-4 lg:mt-0 lg:mx-0">{{ $latest->humidity ?? '-' }}%</h1>
                         </div>
                         <hr class="my-4">
                         <div class="flex justify-between">
                             <h1>Rata-rata hari ini</h1>
-                            <h1>{{ round($daily->avg_daily_humidity ?? 0, 2) }} %</h1>
+                            <h1>{{ round($daily->avg_daily_humidity ?? 0, 2) }}%</h1>
                         </div>
                         <div class="flex justify-between">
                             <h1>Rata-rata minggu ini</h1>
-                            <h1>{{ round($weekly->avg_weekly_humidity ?? 0, 2) }} %</h1>
+                            <h1>{{ round($weekly->avg_weekly_humidity ?? 0, 2) }}%</h1>
                         </div>
                     </div>
                     <div class="bg-[#FFFFF0] rounded-[20px] p-10">
@@ -498,7 +506,7 @@
                         </div>
                         <div class="flex justify-between">
                             <h1>Update data terakhir</h1>
-                            <h1 id="last_update">{{ $latest?->created_at?->format('d-m-Y - H:i:s') ?? '-' }}</h1>
+                            <h1 id="last_update">{{ $latest?->created_at?->locale('id')->format('d-m-Y - H:i:s') ?? '-' }}</h1>
 
                         </div>
                     </div>
@@ -684,7 +692,7 @@
         fetch("{{ route('chart.get',['virdi_type' => $device->virdi_type, 'device_id' => $device->id , 'periode' => 'now']) }}")
             .then(response => response.json())
             .then(data => {
-                document.getElementById('humidity').textContent = data.siram_sensors[0].humidity;
+                document.getElementById('humidity').textContent = data.siram_sensors[0].humidity + "%";
                 document.getElementById('temperature').textContent = data.siram_sensors[0].temperature;
                 document.getElementById('online_status').textContent = data.status === 1 ? 'online' : 'offline';
                 document.getElementById('online_duration').textContent = data.siram_sensors[0].online_duration;

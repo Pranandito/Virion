@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\API\V1\ConfigController;
 use App\Models\FeedConfig;
 use App\Models\FeedSchedule;
+use App\Models\SiramSchedule;
 use Illuminate\Http\Request;
 
 class ScheduleController extends Controller
@@ -40,7 +41,7 @@ class ScheduleController extends Controller
         $validated['days'] = implode(",", $validated['days']);
 
         $logger = new ConfigController;
-        $logging = $logger->logging($device_id, 'add_schedule', $validated['name']);
+        $logging = $logger->logging($device_id, 'feed_add_schedule', $validated['name']);
         unset($validated['name']);
 
         $insert = FeedSchedule::insert($validated);

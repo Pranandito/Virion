@@ -1,4 +1,11 @@
 @props(['mode', 'virdi_type', 'id', 'name', 'color'])
+@php
+$desc = [
+"Siram" => ['Menyiram lahan sesuai jadwal dan kelembapan tanah secara otomatis', 'Menyiram lahan sekarang'],
+"Humida" => ['Menyalakan humidifier sesuai kelembapan udara secara otomatis', 'Menyalakan humidifier sekarang'],
+"Pakan" => ['Memberi pakan sesuai jadwal secara otomatis', 'Memberi pakan sekarang']
+]
+@endphp
 
 <div class="relative inline-block">
     <button id="dropdownRadioHelperButton" data-dropdown-toggle="dropdownRadioHelper"
@@ -28,7 +35,7 @@
                                 <div>Automatic</div>
                                 <p id="helper-radio-text-1"
                                     class="text-xs font-normal text-gray-500">
-                                    Memberi pakan sesuai jadwal secara otomatis
+                                    {{ $desc[$virdi_type][0] }}
                                 </p>
                             </label>
                         </div>
@@ -45,7 +52,7 @@
                                 <div>Manual - On</div>
                                 <p id="helper-radio-text-2"
                                     class="text-xs font-normal text-gray-500">
-                                    Memberi pakan sekarang
+                                    {{ $desc[$virdi_type][1] }}
                                 </p>
                             </label>
                         </div>

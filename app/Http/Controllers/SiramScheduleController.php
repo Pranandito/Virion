@@ -36,7 +36,7 @@ class SiramScheduleController extends Controller
         $validated['days'] = implode(",", $validated['days']);
 
         $logger = new ConfigController;
-        $logging = $logger->logging($device_id, 'add_schedule', $validated['name']);
+        $logging = $logger->logging($device_id, 'siram_add_schedule', $validated['name']);
         unset($validated['name']);
 
         $insert = SiramSchedule::insert($validated);
@@ -48,6 +48,13 @@ class SiramScheduleController extends Controller
         //     'today' => today()
         // ]);
 
+        return back();
+    }
+
+
+    public function delete($schedule_id)
+    {
+        $delete = SiramSchedule::where('id', $schedule_id)->delete();
         return back();
     }
 }

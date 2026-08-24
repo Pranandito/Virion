@@ -249,4 +249,13 @@ class ESPController
 
         return response()->json(['status_update' => $update_success]);
     }
+
+    // public function siramSuccess($device_id, Request $request){
+    //     $validated = $request->validate([
+    //         "mode" => 'required|string',
+    //         "duration" => 'require|integer'
+    //     ]);
+
+    //     $
+    // }
 }
