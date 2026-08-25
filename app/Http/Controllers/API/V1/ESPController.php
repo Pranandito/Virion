@@ -9,15 +9,21 @@ use App\Models\FeedSchedule;
 use App\Models\FeedStorage;
 use App\Models\HumidaConfig;
 use App\Models\HumidaSensor;
+use App\Models\SiramAcitivtyLog;
+use App\Models\SiramActivityLog;
 use App\Models\SiramConfig;
 use App\Models\SiramSchedule;
 use App\Models\SiramSensor;
+use App\Services\LoggingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ESPController
 {
+    public function __construct(
+        protected LoggingService $logService
+    ) {}
 
     private function mapValue($value, $fromLow, $fromHigh, $toLow, $toHigh)
     {
@@ -49,8 +55,12 @@ class ESPController
             'Feed' => FeedStorage::class
         ];
 
+        $now = now()->timezone('Asia/Jakarta');
         $lastData = $sensorModels[$virdiType]::where('device_id', $device_id)
-            ->whereDate('created_at', Carbon::today())
+            ->whereDate('created_at', $now->toDateString())
+            ->with(['device' => function ($querry) {
+                $querry->select('id', 'status', 'name');
+            }])
             ->latest()->first();
 
         if (empty($lastData)) {
@@ -60,7 +70,7 @@ class ESPController
         } else {
             $lastOnDuration = Carbon::parse($lastData->online_duration);
 
-            $selisihWaktu = $lastData->created_at->diffInSeconds(Carbon::now());
+            $selisihWaktu = $lastData->created_at->diffInSeconds($now);
             if ($selisihWaktu > 300 || $selisihWaktu == 0) {
                 $selisihWaktu = 120;
             }
@@ -83,7 +93,17 @@ class ESPController
         unset($validated['refill']);
 
         $validated['device_id'] = $device_id;
+        $validated['created_at'] = $now;
         $store = $sensorModels[$virdiType]::insert($validated);
+
+        // $logging = null;
+        // $statusUpdate = null;
+        if ($lastData->device->status == 0) {
+            $statusUpdate = Device::where('id', $device_id)->update([
+                "status" => 1,
+            ]);
+            $logging = $this->logService->logging($lastData->device->id, 'offline', $lastData->device->name);
+        }
 
         $config = $this->getConfig($virdiType, $device_id);
 
@@ -94,6 +114,8 @@ class ESPController
             // 'status_lastReffill' => $refill,
             // 'selisih' => $selisihWaktu,
             // 'lastData' => empty($lastData),
+            // 'log' => $logging,
+            // 'status update' => $statusUpdate,
             'saving_status' => $store,
             'config' => $config
         ]);
@@ -250,12 +272,16 @@ class ESPController
         return response()->json(['status_update' => $update_success]);
     }
 
-    // public function siramSuccess($device_id, Request $request){
-    //     $validated = $request->validate([
-    //         "mode" => 'required|string',
-    //         "duration" => 'require|integer'
-    //     ]);
+    public function siramSuccess(Request $request)
+    {
+        $validated = $request->validate([
+            "device_id" => 'required|integer|exists:devices,id',
+            "mode" => 'required|in:Manual,Otomatis,Jadwal',
+            "duration" => 'required|integer|min:0'
+        ]);
 
-    //     $
-    // }
+        $log = SiramActivityLog::create($validated);
+
+        return $log;
+    }
 }

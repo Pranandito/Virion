@@ -151,7 +151,7 @@
 
             <section class="lg:w-7/12 mt-7 lg:mt-0">
                 <!-- Section Alat -->
-                <section class="flex-auto bg-[#FFFFF0] rounded-3xl p-11 mb-7 text-xl text-gray-400">
+                <section class="flex-auto bg-[#FFFFF0] rounded-3xl p-11 text-xl text-gray-400">
                     <div class="flex justify-between items-center mb-8 text-2xl text-gray-800">
                         <div class="flex items-center gap-4">
                             <img src="{{ asset('images/cpu.svg') }}" alt="">
@@ -171,7 +171,7 @@
 
                     <div class="relative">
                         <div class="overflow-x-auto overflow-y-auto">
-                            <div class="min-w-[600px] lg:min-w-0 h-60">
+                            <div class="min-w-[600px] lg:min-w-0 h-80 lg:h-[790px]">
                                 <div class="top-0 sticky bg-[#FFFFF0]">
                                     <div class="grid grid-cols-3 items-center text-gray-800">
                                         <div class="justify-self-start ml-4">Alat Anda</div>
@@ -210,7 +210,7 @@
 
 
                 <!-- Section Data Stream -->
-                <section class="flex-auto bg-[#FFFFF0] rounded-3xl p-11">
+                <!-- <section class="flex-auto bg-[#FFFFF0] rounded-3xl p-11">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-4">
                             <img src="{{ asset('images/chart.svg') }}" alt="">
@@ -223,16 +223,16 @@
                     <div class="relative lg:h-[380px] h-[360px] mt-3">
                         <canvas id="myChart"></canvas>
                     </div>
-                </section>
+                </section> -->
             </section>
         </main>
     </div>
 
     <footer class="bg-[#FFFFF0] flex justify-center">
-        <h1 class="py-5 text-xl">2025 ©&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;Virion</h1>
+        <h1 class="py-5 text-xl">2026 ©&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;Virion</h1>
     </footer>
 </body>
-
+<!-- 
 <script>
     const ctx = document.getElementById('myChart').getContext('2d');
     const myChart = new Chart(ctx, {
@@ -299,7 +299,7 @@
             }
         }
     });
-</script>
+</script> -->
 
 <script>
     // Sidebar

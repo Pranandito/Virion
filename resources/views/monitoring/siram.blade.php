@@ -9,6 +9,78 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>{{ $device->name }}</title>
     <link rel="shortcut icon" href="{{ asset('images/Logo.png') }}" type="image/x-icon">
+
+    <style>
+        .activity-log-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .activity-log-scroll::-webkit-scrollbar-thumb {
+            background: #E0E0E0;
+            border-radius: 9999px;
+        }
+
+        .activity-log-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+
+    <style>
+        #chartTooltip {
+            opacity: 0;
+            position: absolute;
+            background: #E2E7E3;
+            border-radius: 12px;
+            padding: 14px 16px;
+            pointer-events: none;
+            transition: opacity 0.15s ease;
+            font-family: inherit;
+            color: #4D5650;
+            min-width: 160px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+        }
+
+        #chartTooltip .tt-date {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        #chartTooltip .tt-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #chartTooltip .tt-bar {
+            width: 3px;
+            height: 32px;
+            border-radius: 2px;
+            background: #03D076;
+        }
+
+        #chartTooltip .tt-label {
+            font-size: 11px;
+            color: #79857E;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        #chartTooltip .tt-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+    </style>
 </head>
 
 <x-beranda.side-bar :devices="$devices" />
@@ -259,7 +331,7 @@
 </aside>
 
 <div id="schedule-detail-modal" class="hidden fixed inset-0 z-20 flex items-center justify-center p-4">
-    <div class="relative bg-[#FFFFF0] rounded-[20px] p-8 w-full max-w-md max-h-[85vh] overflow-y-auto shadow-xl">
+    <div class="relative bg-[#FFFFF0] rounded-[20px] p-8 w-full max-w-md max-h-[85vh] overflow-y-auto shadow-xl scrollbar-hide">
         <div class="flex items-center justify-between mb-6 text-gray-800">
             <div class="flex items-center gap-3 text-lg">
                 <div class="p-3 bg-[#80B56F] rounded-full">
@@ -332,7 +404,6 @@
 </div>
 
 <body class="bg-[#F4F7F3]">
-    <!-- navbar -->
     <div class="mx-8 lg:mx-20 pt-8 text-2xl mb-10">
         <nav class="flex justify-between items-center mb-11">
             <div class="flex  items-center lg:gap-11 gap-5">
@@ -372,7 +443,7 @@
                                         <path d="M5.16699 14.8314C6.87616 14.3017 10.291 14.1314 14.4817 16.4857C18.6653 18.8354 22.1023 17.9977 23.8337 16.9909" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                 </div>
-                                <h1>Indeks Kualitas <br> Udara Greenhouse</h1>
+                                <h1>Indeks Kualitas <br> Lahan Greenhouse</h1>
                             </div>
                             <h1 class="text-4xl mt-4 lg:mt-0 w-fit mx-auto lg:mx-0">{{ $index['current'] ?? '-' }}</h1>
                         </div>
@@ -413,7 +484,7 @@
                                         <path d="M5.16699 14.8314C6.87616 14.3017 10.291 14.1314 14.4817 16.4857C18.6653 18.8354 22.1023 17.9977 23.8337 16.9909" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                                     </svg>
                                 </div>
-                                <h1>Kelembapan <br> Udara</h1>
+                                <h1>Kelembapan <br> Tanah</h1>
                             </div>
                             <h1 id="humidity" class="text-4xl mx-auto w-fit mt-4 lg:mt-0 lg:mx-0">{{ $latest->humidity ?? '-' }}%</h1>
                         </div>
@@ -506,35 +577,108 @@
                         </div>
                         <div class="flex justify-between">
                             <h1>Update data terakhir</h1>
-                            <h1 id="last_update">{{ $latest?->created_at?->locale('id')->format('d-m-Y - H:i:s') ?? '-' }}</h1>
-
+                            <h1 id="last_update">
+                                {{ $latest?->created_at?->format('d-m-Y - H:i:s') ?? '-' }}
+                            </h1>
                         </div>
                     </div>
                 </div>
             </section>
 
+            <div class="bg-[#FFFFF0] rounded-[20px] p-11 mt-9">
+                <div class="flex items-center justify-between mb-8 lg:ml-5">
+                    <div class="flex gap-4 items-center">
+                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 6C8.93913 6 7.92172 6.42143 7.17157 7.17157C6.42143 7.92172 6 8.93913 6 10V30C6 31.0609 6.42143 32.0783 7.17157 32.8284C7.92172 33.5786 8.93913 34 10 34H30C31.0609 34 32.0783 33.5786 32.8284 32.8284C33.5786 32.0783 34 31.0609 34 30V10C34 8.93913 33.5786 7.92172 32.8284 7.17157C32.0783 6.42143 31.0609 6 30 6H10ZM20 20C20.2652 20 20.5196 20.1054 20.7071 20.2929C20.8946 20.4804 21 20.7348 21 21V27C21 27.2652 20.8946 27.5196 20.7071 27.7071C20.5196 27.8946 20.2652 28 20 28C19.7348 28 19.4804 27.8946 19.2929 27.7071C19.1054 27.5196 19 27.2652 19 27V21C19 20.7348 19.1054 20.4804 19.2929 20.2929C19.4804 20.1054 19.7348 20 20 20ZM12 17C12 16.7348 12.1054 16.4804 12.2929 16.2929C12.4804 16.1054 12.7348 16 13 16C13.2652 16 13.5196 16.1054 13.7071 16.2929C13.8946 16.4804 14 16.7348 14 17V27C14 27.2652 13.8946 27.5196 13.7071 27.7071C13.5196 27.8946 13.2652 28 13 28C12.7348 28 12.4804 27.8946 12.2929 27.7071C12.1054 27.5196 12 27.2652 12 27V17ZM27 12C27.2652 12 27.5196 12.1054 27.7071 12.2929C27.8946 12.4804 28 12.7348 28 13V27C28 27.2652 27.8946 27.5196 27.7071 27.7071C27.5196 27.8946 27.2652 28 27 28C26.7348 28 26.4804 27.8946 26.2929 27.7071C26.1054 27.5196 26 27.2652 26 27V13C26 12.7348 26.1054 12.4804 26.2929 12.2929C26.4804 12.1054 26.7348 12 27 12Z" fill="black" />
+                        </svg>
+                        <h1>Tren Kualitas Lahan</h1>
+                    </div>
+                </div>
+                <div class="relative lg:h-[480px] h-90">
+                    <canvas id="myChart"></canvas>
+                    <div id="chartTooltip"></div>
+                </div>
+            </div>
+
             <section class="mt-9">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-9">
-                    <div class="bg-[#FFFFF0] rounded-[20px] p-11">
-                        <div class="flex items-center justify-between mb-8 lg:ml-5">
-                            <div class="flex gap-4 items-center">
-                                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M10 6C8.93913 6 7.92172 6.42143 7.17157 7.17157C6.42143 7.92172 6 8.93913 6 10V30C6 31.0609 6.42143 32.0783 7.17157 32.8284C7.92172 33.5786 8.93913 34 10 34H30C31.0609 34 32.0783 33.5786 32.8284 32.8284C33.5786 32.0783 34 31.0609 34 30V10C34 8.93913 33.5786 7.92172 32.8284 7.17157C32.0783 6.42143 31.0609 6 30 6H10ZM20 20C20.2652 20 20.5196 20.1054 20.7071 20.2929C20.8946 20.4804 21 20.7348 21 21V27C21 27.2652 20.8946 27.5196 20.7071 27.7071C20.5196 27.8946 20.2652 28 20 28C19.7348 28 19.4804 27.8946 19.2929 27.7071C19.1054 27.5196 19 27.2652 19 27V21C19 20.7348 19.1054 20.4804 19.2929 20.2929C19.4804 20.1054 19.7348 20 20 20ZM12 17C12 16.7348 12.1054 16.4804 12.2929 16.2929C12.4804 16.1054 12.7348 16 13 16C13.2652 16 13.5196 16.1054 13.7071 16.2929C13.8946 16.4804 14 16.7348 14 17V27C14 27.2652 13.8946 27.5196 13.7071 27.7071C13.5196 27.8946 13.2652 28 13 28C12.7348 28 12.4804 27.8946 12.2929 27.7071C12.1054 27.5196 12 27.2652 12 27V17ZM27 12C27.2652 12 27.5196 12.1054 27.7071 12.2929C27.8946 12.4804 28 12.7348 28 13V27C28 27.2652 27.8946 27.5196 27.7071 27.7071C27.5196 27.8946 27.2652 28 27 28C26.7348 28 26.4804 27.8946 26.2929 27.7071C26.1054 27.5196 26 27.2652 26 27V13C26 12.7348 26.1054 12.4804 26.2929 12.2929C26.4804 12.1054 26.7348 12 27 12Z" fill="black" />
-                                </svg>
-                                <h1>Grafik Kualitas Lahan</h1>
-                            </div>
-                        </div>
-                        <div class="relative lg:h-[480px] h-90">
-                            <canvas id="myChart"></canvas>
-                        </div>
-                    </div>
 
+                    <div class="bg-[#FFFFF0] rounded-[20px] text-3xl p-11">
+                        <div class="flex items-center gap-6 mb-8 lg:ml-5">
+                            <div class="p-4 bg-[#80B56F] rounded-full">
+                                <svg width="23" height="20" viewBox="0 0 23 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <g clip-path="url(#clip0_907_62)">
+                                        <path d="M18.8125 4.40375C17.98 5.225 17.7662 6.40625 18.16 7.41875L14.875 10.7038V8.375C14.875 7.75625 14.3687 7.25 13.75 7.25H12.5912C12.625 7.05875 12.625 6.87875 12.625 6.6875C12.625 3.2675 9.85748 0.500003 6.43748 0.500003C5.16307 0.498808 3.91941 0.891369 2.87663 1.62399C1.83385 2.3566 1.04287 3.3935 0.611901 4.59283C0.180931 5.79216 0.131016 7.09535 0.468984 8.32413C0.806951 9.55291 1.5163 10.6473 2.49998 11.4575V18.5C2.49998 19.1188 3.00623 19.625 3.62498 19.625H13.75C14.3687 19.625 14.875 19.1188 14.875 18.5V13.8763L19.7462 9.005C20.7587 9.39875 21.94 9.19625 22.75 8.375L18.8125 4.40375ZM2.55623 7.25C2.53373 7.05875 2.49998 6.87875 2.49998 6.6875C2.49998 4.51625 4.26623 2.75 6.43748 2.75C8.60873 2.75 10.375 4.51625 10.375 6.6875C10.375 6.87875 10.3412 7.05875 10.3187 7.25M12.625 17.375H4.74998V9.5H12.625V17.375Z" fill="white" />
+                                    </g>
+                                    <defs>
+                                        <clipPath id="clip0_907_62">
+                                            <rect width="23" height="20" fill="white" />
+                                        </clipPath>
+                                    </defs>
+                                </svg>
+                            </div>
+
+                            <h1 class="text-xl lg:text-2xl">Aktivitas Penyiraman <span class="hidden lg:inline-block">Lahan</span></h1>
+                        </div>
+
+                        <div class="flex items-center justify-between mb-5">
+                            <div class="">
+                                <h1>{{ $device->today_activity->count() }} <span class="text-base">Kali</span></h1>
+                                <p class="text-gray-400 text-sm">Penyiraman <span class="hidden lg:inline-block">hari ini</span></p>
+                            </div>
+                            <div class="text-center">
+                                <h1>{{ round($device->today_activity->sum('duration')/60) }} <span class="text-base hidden lg:inline-block">Menit</span> <span class="text-base inline-block lg:hidden">m</span></h1>
+                                <p class="text-gray-400 text-sm">Durasi <span class="hidden lg:inline-block">Penyiraman</span></p>
+                            </div>
+                            <div class="text-end">
+                                <h1>{{ round($device->today_activity->sum('duration')) }} <span class="text-base hidden lg:inline-block">Liter</span><span class="text-base inline-block lg:hidden">L</span></h1>
+                                <p class="text-gray-400 text-sm">Volume <span class="hidden lg:inline-block">Penyiraman</span></p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="h-[380px] overflow-y-auto activity-log-scroll pr-3">
+                            @forelse($device->siram_activity_logs->take(5) as $activity_log)
+
+                            @if($loop->iteration ==1)
+                            <hr class="mb-5 text-gray-400">
+                            @endif
+
+                            <div class="flex justify-between items-center lg:mx-5">
+                                <div class="flex items-center gap-4">
+                                    <h1 class="py-2 px-4 rounded-full bg-[#80CC94]/50 text-xl text-[#FFFFF0] font-bold">
+                                        {{ $loop->iteration }}
+                                    </h1>
+                                    <div>
+                                        <h1 class="text-xl">Penyiraman {{ $activity_log->mode }}</h1>
+                                        <p class="text-base text-gray-400 hidden lg:block">Penyiraman karena {{ $activity_log->desc() }}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right text-base text-gray-400 hidden lg:block">
+                                    <p>{{ $activity_log->created_at->locale('id')->diffForHumans() }}</p>
+                                    <p>{{ $activity_log->created_at->locale('id')->translatedFormat('j M - H:i:s') }}</p>
+                                </div>
+                            </div>
+                            <p class="text-base text-gray-400 mt-2 lg:hidden">Penyiraman karena {{ $activity_log->desc() }}</p>
+                            <div class="flex justify-between text-right text-base text-gray-400 lg:hidden">
+                                <!-- <p>Baru Saja</p> -->
+                                <p>{{ $activity_log->created_at->format('j l - H:i:s') }}</p>
+                            </div>
+
+                            <hr class="my-5 text-gray-400">
+                            @empty
+                            <h1 class="text-base text-gray-400 text-center">Belum ada log aktivitas penyiraman perangkat</h1>
+                            @endforelse
+                        </div>
+
+                    </div>
                     <div class="bg-[#FFFFF0] rounded-[20px] text-3xl p-11">
                         <div class="flex items-center gap-6 mb-8 lg:ml-5">
                             <svg width="53" height="53" viewBox="0 0 33 33" fill="none" xmlns="http://www.w3.org/2000/svg" class="p-3 bg-[#80B56F] rounded-full">
                                 <path d="M15.125 28.875V19.8L8.73125 26.2281L6.77188 24.2687L13.2 17.875H4.125V15.125H13.2L6.77188 8.73125L8.73125 6.77188L15.125 13.2V4.125H17.875V13.2L24.2687 6.77188L26.2281 8.73125L19.8 15.125H28.875V17.875H19.8L26.2281 24.2687L24.2687 26.2281L17.875 19.8V28.875H15.125Z" fill="white" />
                             </svg>
-                            <h1>Log Aktivitas</h1>
+                            <h1>Log Aktivitas <span class="hidden lg:inline-block">Perangkat</span></h1>
                         </div>
 
                         @foreach($device->devices_logs as $log)
@@ -571,39 +715,67 @@
     </div>
 
     <footer class="bg-[#FFFFF0] flex justify-center">
-        <h1 class="py-5 text-xl">2025 ©&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;Virion</h1>
+        <h1 class="py-5 text-xl">2026 ©&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;Virion</h1>
     </footer>
 </body>
 
 <script>
+    function externalTooltipHandler(context) {
+        const {
+            chart,
+            tooltip
+        } = context;
+        const tooltipEl = document.getElementById('chartTooltip');
+
+        if (tooltip.opacity === 0) {
+            tooltipEl.style.opacity = 0;
+            return;
+        }
+
+        if (tooltip.body) {
+            const dataPoint = tooltip.dataPoints[0];
+            const label = chart.data.labels[dataPoint.dataIndex];
+            const value = dataPoint.formattedValue;
+
+            tooltipEl.innerHTML = `
+                <div class="tt-date">${label}</div>
+                <div class="tt-row">
+                    <div class="tt-bar"></div>
+                    <div>
+                        <div class="tt-label">Kelembapan</div>
+                        <div class="tt-value">${value} %</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        const {
+            offsetLeft: positionX,
+            offsetTop: positionY
+        } = chart.canvas;
+        tooltipEl.style.opacity = 1;
+        tooltipEl.style.left = positionX + tooltip.caretX + 12 + 'px';
+        tooltipEl.style.top = positionY + tooltip.caretY - 20 + 'px';
+    }
+
     const ctx = document.getElementById('myChart').getContext('2d');
     const myChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: [],
             datasets: [{
-                    label: 'Kelembapan',
-                    data: [],
-                    groundColor: '#03D076',
-                    pointBackgroundColor: 'rgb(255,255,255)',
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    borderColor: '#03D076',
-                    borderWidth: 1,
-                    borderRadius: 6
-                },
-                {
-                    label: 'Temperatur',
-                    data: [],
-                    groundColor: '#FFC42E',
-                    pointBackgroundColor: 'rgb(255,255,255)',
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    borderColor: '#FFC42E',
-                    borderWidth: 1,
-                    borderRadius: 6
-                }
-            ]
+                label: 'Kelembapan',
+                data: [],
+                borderColor: '#03D076',
+                backgroundColor: '#03D076',
+                borderWidth: 1.5,
+                pointRadius: 0, // sembunyikan titik saat data padat
+                pointHoverRadius: 5, // tetap muncul saat hover
+                pointHitRadius: 8, // area sentuh/hover diperlebar
+                pointBackgroundColor: 'rgb(255,255,255)',
+                tension: 0.3, // sedikit smoothing biar tidak zig-zag tajam
+                borderRadius: 0
+            }]
         },
         options: {
             responsive: true,
@@ -617,10 +789,15 @@
                         boxWidth: 8,
                         boxHeight: 8,
                     }
+                },
+                tooltip: {
+                    enabled: false,
+                    external: externalTooltipHandler
                 }
             },
             interaction: {
                 intersect: false,
+                mode: 'index'
             },
             scales: {
                 x: {
@@ -629,18 +806,22 @@
                         display: true
                     },
                     ticks: {
+                        autoSkip: false, // kontrol manual lewat callback, bukan autoSkip bawaan
                         callback: function(val, index) {
-                            const maxLabels = 10; // maksimum label yang mau ditampilkan
-                            const step = Math.ceil(this.getLabels().length / maxLabels);
+                            const totalLabels = this.getLabels().length;
+                            const maxLabels = 5; // maksimum label yang ditampilkan
+                            const step = Math.ceil(totalLabels / maxLabels);
                             return index % step === 0 ? this.getLabelForValue(val) : '';
-                        }
+                        },
+                        maxRotation: 0,
+                        minRotation: 0
                     }
                 },
                 y: {
                     display: true,
                     title: {
                         display: true,
-                        text: 'Temperatur dan Kelembapan'
+                        text: 'Kelembapan'
                     }
                 }
             }
@@ -648,24 +829,22 @@
     });
 
     function loadChart() {
-        fetch("{{ route('chart.get',['virdi_type' => $device->virdi_type, 'device_id' => $device->id , 'periode' => 'monthly']) }}")
+        fetch("{{ route('chart.get',['virdi_type' => $device->virdi_type, 'device_id' => $device->id , 'periode' => 'daily']) }}")
             .then(response => response.json())
             .then(data => {
-                const values_temp = data.map(row => row.temperature);
                 const values_hum = data.map(row => row.humidity);
                 const labels = data.map(row => {
                     const date = new Date(row.created_at);
                     return date.toLocaleString('id-ID', {
                         day: '2-digit',
                         month: '2-digit',
-                        // hour: '2-digit',
-                        // minute: '2-digit'
+                        hour: '2-digit',
+                        minute: '2-digit'
                     });
                 });
 
                 myChart.data.labels = labels;
                 myChart.data.datasets[0].data = values_hum;
-                myChart.data.datasets[1].data = values_temp;
                 myChart.update();
             })
             .catch(error => console.error('Error:', error));

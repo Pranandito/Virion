@@ -59,7 +59,7 @@ class DashboardController
                 break;
 
             case "daily":
-                $sensorData = $sensorModels[$virdiType]::where('device_id', $device_id)->whereDate('created_at', Carbon::today())->get();
+                $sensorData = $sensorModels[$virdiType]::where('device_id', $device_id)->select('id', 'humidity', 'online_duration', 'created_at')->whereDate('created_at', Carbon::today())->get();
                 break;
 
             case "weekly":

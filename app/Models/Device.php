@@ -66,6 +66,11 @@ class Device extends Model
         return $this->hasMany(SiramSchedule::class);
     }
 
+    public function siram_activity_logs()
+    {
+        return $this->hasMany(SiramActivityLog::class);
+    }
+
     public function feed_storages()
     {
         return $this->hasMany(FeedStorage::class);
