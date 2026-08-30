@@ -404,7 +404,7 @@
 </div>
 
 <body class="bg-[#F4F7F3]">
-    <div class="mx-8 lg:mx-20 pt-8 text-2xl mb-10">
+    <div class="mx-5 lg:mx-20 pt-8 text-2xl mb-10">
         <nav class="flex justify-between items-center mb-11">
             <div class="flex  items-center lg:gap-11 gap-5">
                 <button type="button" id="hamburger" class="cursor-pointer hover:bg-[#D1D1C6] rounded-full px-2 py-1">
@@ -577,8 +577,11 @@
                         </div>
                         <div class="flex justify-between">
                             <h1>Update data terakhir</h1>
-                            <h1 id="last_update">
+                            <h1 id="last_update" class="hidden lg:block">
                                 {{ $latest?->created_at?->format('d-m-Y - H:i:s') ?? '-' }}
+                            </h1>
+                            <h1 id="last_update" class="lg:hidden block">
+                                {{ $latest?->created_at?->format('j/n H:i') ?? '-' }}
                             </h1>
                         </div>
                     </div>
@@ -621,37 +624,36 @@
                             <h1 class="text-xl lg:text-2xl">Aktivitas Penyiraman <span class="hidden lg:inline-block">Lahan</span></h1>
                         </div>
 
-                        <div class="flex items-center justify-between mb-5">
+                        <div class="grid lg:grid-cols-3 grid-cols-2 mb-5">
                             <div class="">
                                 <h1>{{ $device->today_activity->count() }} <span class="text-base">Kali</span></h1>
                                 <p class="text-gray-400 text-sm">Penyiraman <span class="hidden lg:inline-block">hari ini</span></p>
                             </div>
-                            <div class="text-center">
+                            <div class="lg:text-center text-end">
                                 <h1>{{ round($device->today_activity->sum('duration')/60) }} <span class="text-base hidden lg:inline-block">Menit</span> <span class="text-base inline-block lg:hidden">m</span></h1>
                                 <p class="text-gray-400 text-sm">Durasi <span class="hidden lg:inline-block">Penyiraman</span></p>
                             </div>
-                            <div class="text-end">
+                            <div class="lg:text-end text-center col-span-2 lg:col-span-1">
                                 <h1>{{ round($device->today_activity->sum('duration')) }} <span class="text-base hidden lg:inline-block">Liter</span><span class="text-base inline-block lg:hidden">L</span></h1>
                                 <p class="text-gray-400 text-sm">Volume <span class="hidden lg:inline-block">Penyiraman</span></p>
                             </div>
-
                         </div>
 
 
                         <div class="h-[380px] overflow-y-auto activity-log-scroll pr-3">
                             @forelse($device->siram_activity_logs->take(5) as $activity_log)
 
-                            @if($loop->iteration ==1)
+                            @if($loop->iteration == 1)
                             <hr class="mb-5 text-gray-400">
                             @endif
 
-                            <div class="flex justify-between items-center lg:mx-5">
+                            <div class="flex justify-between items-center">
                                 <div class="flex items-center gap-4">
-                                    <h1 class="py-2 px-4 rounded-full bg-[#80CC94]/50 text-xl text-[#FFFFF0] font-bold">
-                                        {{ $loop->iteration }}
+                                    <h1 class="py-3 px-3 rounded-full bg-[#80CC94]/50 text-base lg:text-xl text-[#FFFFF0] font-bold">
+                                        {{ round($activity_log->duration/60) }} <span class="text-xs">m</span>
                                     </h1>
                                     <div>
-                                        <h1 class="text-xl">Penyiraman {{ $activity_log->mode }}</h1>
+                                        <h1 class="lg:text-xl text-lg">Penyiraman {{ $activity_log->mode }}</h1>
                                         <p class="text-base text-gray-400 hidden lg:block">Penyiraman karena {{ $activity_log->desc() }}</p>
                                     </div>
                                 </div>
@@ -660,10 +662,9 @@
                                     <p>{{ $activity_log->created_at->locale('id')->translatedFormat('j M - H:i:s') }}</p>
                                 </div>
                             </div>
-                            <p class="text-base text-gray-400 mt-2 lg:hidden">Penyiraman karena {{ $activity_log->desc() }}</p>
-                            <div class="flex justify-between text-right text-base text-gray-400 lg:hidden">
-                                <!-- <p>Baru Saja</p> -->
-                                <p>{{ $activity_log->created_at->format('j l - H:i:s') }}</p>
+                            <p class="text-center text-base text-gray-400 mt-2 lg:hidden">Penyiraman karena {{ $activity_log->desc() }}</p>
+                            <div class="text-center text-base text-gray-400 lg:hidden">
+                                <p>{{ $activity_log->created_at->locale('id')->translatedFormat('j l - H:i:s') }}</p>
                             </div>
 
                             <hr class="my-5 text-gray-400">
@@ -694,13 +695,13 @@
                                 </div>
                             </div>
                             <div class="text-right text-base text-gray-400 hidden lg:block">
-                                <!-- <p>Baru Saja</p> -->
+                                {{ $log->created_at->locale('id')->diffForHumans() }}
                                 <p>{{ $log->created_at->format('H:i:s') }}</p>
                             </div>
                         </div>
-                        <p class="text-base text-gray-400 mt-2 lg:hidden">{{ $log->activity }}</p>
+                        <p class="text-base text-center text-gray-400 mt-2 lg:hidden">{{ $log->activity }}</p>
                         <div class="flex justify-between text-right text-base text-gray-400 lg:hidden">
-                            <!-- <p>Baru Saja</p> -->
+                            <p>{{ $log->created_at->locale('id')->diffForHumans() }}</p>
                             <p>{{ $log->created_at->format('H:i:s') }}</p>
                         </div>
 
@@ -806,10 +807,21 @@
                         display: true
                     },
                     ticks: {
-                        autoSkip: false, // kontrol manual lewat callback, bukan autoSkip bawaan
+                        autoSkip: false,
                         callback: function(val, index) {
                             const totalLabels = this.getLabels().length;
-                            const maxLabels = 5; // maksimum label yang ditampilkan
+                            const chartWidth = this.chart.width;
+
+                            // tentukan maxLabels sesuai lebar layar/chart
+                            let maxLabels;
+                            if (chartWidth < 400) {
+                                maxLabels = 3; // hp kecil
+                            } else if (chartWidth < 768) {
+                                maxLabels = 4; // hp besar / tablet kecil
+                            } else {
+                                maxLabels = 6; // desktop
+                            }
+
                             const step = Math.ceil(totalLabels / maxLabels);
                             return index % step === 0 ? this.getLabelForValue(val) : '';
                         },

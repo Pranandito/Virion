@@ -20,9 +20,12 @@ class LoggingService
             'feed_add_schedule' => "Menambahkan jadwal pemberian pakan $data",
         ];
 
+        $now = now()->timezone('Asia/Jakarta');
+
         $log = DevicesLog::insert([
             'device_id' => $device_id,
             'activity' => $message[$activity],
+            'created_at' => $now
         ]);
 
         return $log;

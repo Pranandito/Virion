@@ -13,6 +13,11 @@ class SiramSensor extends Model
         'online duration'
     ];
 
+    protected $casts = [
+        'temperature' => 'float',
+        'humidity' => 'float',
+    ];
+
     public function device()
     {
         return $this->belongsTo(Device::class);

@@ -93,7 +93,7 @@
                         <img src="{{ asset('images/profile_pict.png') }}" alt="" class="rounded-full p-2.5">
                     </div>
                     <a href="{{ route('profile.edit') }}">
-                        <button type="button" id="btn-edit-profile"
+                        <button type="button"
                             class="absolute top-2 right-0 h-fit p-2 rounded-full hover:bg-gray-200 mr-4 cursor-pointer">
                             <img src="{{ asset('images/setting-abu.svg') }}" alt="" class="">
                         </button>
@@ -111,7 +111,7 @@
                                 <img src="{{ asset('images/stopwatch.svg') }}" alt="">
                                 <h1>Terakhir Online</h1>
                             </div>
-                            {{ \Carbon\Carbon::parse($user->users_logs->last_login)->translatedFormat('d F Y') }}
+                            {{ now()->translatedFormat('d F Y') }}
                             <h1>{{ $user->users_logs->last_location }}</h1>
                         </div>
                     </div>

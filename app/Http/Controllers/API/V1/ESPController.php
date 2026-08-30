@@ -55,13 +55,24 @@ class ESPController
             'Feed' => FeedStorage::class
         ];
 
-        $now = now()->timezone('Asia/Jakarta');
-        $lastData = $sensorModels[$virdiType]::where('device_id', $device_id)
-            ->whereDate('created_at', $now->toDateString())
+        $dataRecord = $sensorModels[$virdiType]::where('device_id', $device_id)
             ->with(['device' => function ($querry) {
                 $querry->select('id', 'status', 'name');
-            }])
-            ->latest()->first();
+            }])->latest()->limit(10)->get();
+
+        $now = now()->timezone('Asia/Jakarta');
+        $lastData = $dataRecord
+            ->filter(function ($data) use ($now) {
+                return $data->created_at
+                    ->timezone('Asia/Jakarta')
+                    ->isSameDay($now);
+            })->first();
+
+        // $lastData = $sensorModels[$virdiType]::where('device_id', $device_id)
+        //     ->whereDate('created_at', $now->toDateString())
+        //     ->with(['device' => function ($querry) {
+        //         $querry->select('id', 'status', 'name');
+        //     }])->latest()->first();
 
         if (empty($lastData)) {
             $validated['online_duration'] = Carbon::createFromTimestamp(120);
@@ -92,17 +103,23 @@ class ESPController
 
         unset($validated['refill']);
 
+        if ($validated['humidity']) {
+            $humidity = ($dataRecord->sum('humidity') + $validated['humidity']) / 11;
+            $validated['humidity'] = $humidity;
+        }
+
         $validated['device_id'] = $device_id;
         $validated['created_at'] = $now;
         $store = $sensorModels[$virdiType]::insert($validated);
 
         // $logging = null;
         // $statusUpdate = null;
+
         if ($lastData->device->status == 0) {
             $statusUpdate = Device::where('id', $device_id)->update([
                 "status" => 1,
             ]);
-            $logging = $this->logService->logging($lastData->device->id, 'offline', $lastData->device->name);
+            $logging = $this->logService->logging($lastData->device->id, 'online', $lastData->device->name);
         }
 
         $config = $this->getConfig($virdiType, $device_id);
